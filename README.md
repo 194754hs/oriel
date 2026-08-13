@@ -64,9 +64,10 @@ the only way it cannot be forgotten at packaging time.
 ```powershell
 # Loads the shim directly and asks it for a dialog, exactly the way COM would
 # after the per-user override is in place. Touches no registry, changes no
-# system state. 28 checks across the save and open dialogs, including that
-# unknown interfaces fall through to the real dialog and that Show puts up the
-# genuine one.
+# system state. 31 checks across the save and open dialogs, including that
+# unknown interfaces fall through to the real dialog, that a save dialog
+# refuses IFileOpenDialog, and that Show really opens one — proven by its own
+# event sink firing rather than by the call returning.
 build\Debug\shim_test.exe
 
 # Registers / unregisters / inspects the per-user override
