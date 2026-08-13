@@ -1,0 +1,1677 @@
+<meta charset="utf-8">
+<title>Oriel — 意匠ベンチ 02・カラム表示</title>
+
+<style>
+/* @FONTS@ — build.ps1 splices the subset OFL faces in here */
+
+/* ══ bench tokens ══════════════════════════════════════════════ */
+:root{
+  --ground:#E9EAEC; --panel:#FFFFFF; --panel-2:#F4F5F6;
+  --ink:#14171B; --ink-2:#5C646E; --ink-3:#8B939C;
+  --hair:rgba(20,23,27,.11); --hair-2:rgba(20,23,27,.06);
+  --brass:#9A6B2E; --brass-dim:rgba(154,107,46,.13);
+  --stage-vignette:rgba(20,23,27,.14);
+  --mono:ui-monospace,"Cascadia Mono","Cascadia Code",Consolas,monospace;
+  --ui:"Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+  --disp:"Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0A0C0F; --panel:#14171B; --panel-2:#0F1216;
+    --ink:#E6E9ED; --ink-2:#98A1AB; --ink-3:#6B747E;
+    --hair:rgba(230,233,237,.13); --hair-2:rgba(230,233,237,.07);
+    --brass:#C08A4A; --brass-dim:rgba(192,138,74,.15);
+    --stage-vignette:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0A0C0F; --panel:#14171B; --panel-2:#0F1216;
+  --ink:#E6E9ED; --ink-2:#98A1AB; --ink-3:#6B747E;
+  --hair:rgba(230,233,237,.13); --hair-2:rgba(230,233,237,.07);
+  --brass:#C08A4A; --brass-dim:rgba(192,138,74,.15);
+  --stage-vignette:rgba(0,0,0,.5);
+}
+:root[data-theme="light"]{
+  --ground:#E9EAEC; --panel:#FFFFFF; --panel-2:#F4F5F6;
+  --ink:#14171B; --ink-2:#5C646E; --ink-3:#8B939C;
+  --hair:rgba(20,23,27,.11); --hair-2:rgba(20,23,27,.06);
+  --brass:#9A6B2E; --brass-dim:rgba(154,107,46,.13);
+  --stage-vignette:rgba(20,23,27,.14);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);
+     font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2{text-wrap:balance;margin:0}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:3px}
+
+.masthead{padding:26px 30px 20px;border-bottom:1px solid var(--hair);
+          display:flex;flex-wrap:wrap;gap:14px 26px;align-items:baseline}
+.masthead h1{font-family:var(--disp);font-size:19px;font-weight:650;letter-spacing:-.012em}
+.masthead .sub{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.02em}
+.masthead .note{font-size:12.5px;color:var(--ink-2);max-width:54ch;line-height:1.55}
+
+.bench{display:grid;grid-template-columns:262px minmax(0,1fr);align-items:start}
+@media (max-width:960px){.bench{grid-template-columns:1fr}}
+
+/* ══ instrument rail ═══════════════════════════════════════════ */
+.rail{position:sticky;top:0;max-height:100vh;overflow-y:auto;
+      padding:20px 18px 40px;border-right:1px solid var(--hair);
+      display:flex;flex-direction:column;gap:19px}
+@media (max-width:960px){.rail{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--hair)}}
+.grp{display:flex;flex-direction:column;gap:7px}
+.grp>label,.grp>.lab{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--ink-3)}
+.seg{display:flex;background:var(--panel-2);border:1px solid var(--hair-2);
+     border-radius:7px;padding:2px;gap:2px}
+.seg button{flex:1;min-width:0;appearance:none;border:0;background:transparent;
+            font:inherit;font-size:12px;color:var(--ink-2);padding:5px 4px;
+            border-radius:5px;cursor:pointer;white-space:nowrap;overflow:hidden;
+            text-overflow:ellipsis;transition:color .12s,background .12s}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--brass);
+            font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.09)}
+.rail input[type=range]{width:100%;accent-color:var(--brass);margin:2px 0}
+.readout{font-family:var(--mono);font-size:11px;color:var(--ink-3);
+         font-variant-numeric:tabular-nums;display:flex;justify-content:space-between;gap:8px}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.swatches button{width:26px;height:26px;border-radius:50%;border:2px solid transparent;
+                 cursor:pointer;padding:0;transition:transform .12s}
+.swatches button:hover{transform:scale(1.12)}
+.swatches button[aria-pressed="true"]{border-color:var(--ink);
+                 box-shadow:0 0 0 2px var(--ground) inset}
+.railnote{font-size:11.5px;color:var(--ink-3);line-height:1.5;
+          border-left:2px solid var(--brass-dim);padding-left:9px}
+.rail hr{border:0;border-top:1px solid var(--hair);width:100%;margin:1px 0}
+.railhd{font-family:var(--disp);font-size:12.5px;font-weight:650;color:var(--brass);
+        letter-spacing:.01em}
+
+/* ══ stage ═════════════════════════════════════════════════════ */
+.stage{position:relative;min-height:660px;padding:40px 30px;overflow-x:auto;
+       display:flex;align-items:center;isolation:isolate}
+#wall{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.stage::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+       background:radial-gradient(120% 90% at 50% 45%,transparent 40%,var(--stage-vignette) 100%)}
+
+/* ════════════════════════════════════════════════════════════════
+   ══ SPECIMEN — the Oriel window under review ═══════════════════
+   ════════════════════════════════════════════════════════════════ */
+.win{
+  --acc:#0078D4;
+  --glass-blur:24px; --glass-sat:190%;
+  --row:26px; --fs:13px;
+  --col-w:206px; --prev-w:250px;
+  --head-h:44px;
+  --r-win:10px; --r-pill:6px; --r-cap:999px;
+  --e:cubic-bezier(.32,.72,0,1);
+  --d-pill:180ms; --d-thumb:220ms; --d-menu:110ms; --d-col:260ms; --d-panel:280ms;
+
+  /* ── type system ──────────────────────────────────────────────
+     Well-set interfaces carry an optical tracking curve: small sizes are
+     LOOSENED, large sizes TIGHTENED, crossing zero around 12–13px. Segoe UI
+     ships flat zero at every size, which is most of the dated feel. The
+     values below are measured against our own faces at our own sizes.
+     --tk multiplies the whole table so it can be dialled to 0 (flat)
+     for an honest before/after. ──────────────────────────────────── */
+  --tk:1;
+  --t-body:13px;    --tt-body:calc(var(--tk) *  0em);
+  --t-meta:12px;    --tt-meta:calc(var(--tk) *  .004em);
+  --t-cap:11px;     --tt-cap:calc(var(--tk) *  .009em);
+  --t-tab:12.5px;   --tt-tab:calc(var(--tk) *  .002em);
+  --t-head:15px;    --tt-head:calc(var(--tk) * -.011em);
+  --t-title:13.5px; --tt-title:calc(var(--tk) * -.005em);
+  --w-body:500; --w-emph:650;
+  --lh-ui:1.25;
+
+  position:relative;z-index:2;width:966px;flex:0 0 auto;
+  transition:width var(--d-panel) var(--e);
+  font-family:var(--f-ui);
+  font-size:var(--t-body);letter-spacing:var(--tt-body);
+  font-weight:var(--w-body);line-height:var(--lh-ui);
+  /* NOT `antialiased` — that thins strokes on Windows, which is exactly
+     the washed-out look we are trying to get rid of. */
+  -webkit-font-smoothing:auto;
+  border-radius:var(--r-win);overflow:hidden;
+  box-shadow:0 0 0 1px var(--w-edge),0 24px 68px rgba(0,0,0,.34),0 3px 12px rgba(0,0,0,.22);
+  color:var(--w-ink);
+  /* transparent on purpose — the sidebar glass has to sample the wallpaper,
+     not an opaque window fill. Opaque surfaces are declared per region. */
+  background:transparent;
+}
+.win[data-appearance="light"]{
+  --w-chrome:#F7F7F8; --w-content:#FFFFFF; --w-ink:#1C1C1E; --w-ink-2:#8A8A8E;
+  --w-hair:rgba(0,0,0,.075); --w-edge:rgba(0,0,0,.16);
+  --w-glass:rgba(250,250,251,.60); --w-spec:rgba(255,255,255,.72);
+  --w-hover:rgba(0,0,0,.045); --w-sel-soft:rgba(0,0,0,.075);
+  --w-sel-idle:rgba(0,0,0,.115);
+}
+.win[data-appearance="dark"]{
+  --w-chrome:#1C1C1F; --w-content:#151517; --w-ink:#F0F0F2; --w-ink-2:#8E8E93;
+  --w-hair:rgba(255,255,255,.085); --w-edge:rgba(255,255,255,.13);
+  --w-glass:rgba(38,38,42,.54); --w-spec:rgba(255,255,255,.16);
+  --w-hover:rgba(255,255,255,.055); --w-sel-soft:rgba(255,255,255,.09);
+  --w-sel-idle:rgba(255,255,255,.145);
+}
+/* Latin family first, CJK family second: Latin glyphs come from the Latin
+   face, Japanese falls through to the matched CJK cut of the same family. */
+.win[data-face="inter"]  {--f-ui:'inter','notojp',system-ui,sans-serif}
+.win[data-face="plex"]   {--f-ui:'plex','plexjp',system-ui,sans-serif}
+.win[data-face="manrope"]{--f-ui:'manrope','zenkaku',system-ui,sans-serif}
+.win[data-face="segoe"]  {--f-ui:"Segoe UI Variable Text","Segoe UI","Yu Gothic UI",sans-serif}
+/* Segoe has no 450; snapping to 400/600 keeps the comparison honest */
+.win[data-face="segoe"]{--w-body:400;--w-emph:600}
+
+.win *{box-sizing:border-box}
+/* :where() zeroes this reset's specificity, so component rules like .ci and .sb
+   can set their own padding. Without it `.win button` (0,1,1) silently beats
+   `.ci` (0,1,0) and every label ends up flush against the selection edge. */
+:where(.win button){font:inherit;color:inherit;background:none;border:0;padding:0;cursor:default}
+.win .ic{width:16px;height:16px;flex:0 0 auto;stroke:currentColor;fill:none;
+         stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── titlebar ─────────────────────────────────────────────────── */
+.tbar{height:34px;display:flex;align-items:flex-end;background:var(--w-chrome);
+      border-bottom:1px solid var(--w-hair);padding-left:8px;position:relative}
+.win[data-tabs="below"] .tbar{align-items:center}
+.tbar .drag{flex:1;height:100%}
+.tbar .title{position:absolute;left:0;right:0;text-align:center;
+      font-size:var(--t-tab);letter-spacing:var(--tt-tab);font-weight:var(--w-emph);
+      color:var(--w-ink-2);pointer-events:none;line-height:34px;display:none}
+.win[data-tabs="below"] .tbar .title{display:block}
+.caption{display:flex;height:100%;align-self:stretch}
+.caption button{width:46px;display:grid;place-items:center;transition:background .1s}
+.caption button:hover{background:var(--w-hover)}
+.caption button.x:hover{background:#C42B1C;color:#fff}
+.caption svg{width:10px;height:10px;stroke:currentColor;stroke-width:1;fill:none}
+
+.tabs-top{display:flex;gap:2px;align-items:flex-end;height:100%;padding-top:4px}
+.win[data-tabs="below"] .tabs-top{display:none}
+.tabs-top .tab{height:30px;min-width:112px;max-width:196px;display:flex;align-items:center;
+      gap:7px;padding:0 9px 0 11px;border-radius:8px 8px 0 0;
+      font-size:var(--t-tab);letter-spacing:var(--tt-tab);
+      color:var(--w-ink-2);transition:background .12s,color .12s}
+.tabs-top .tab:hover{background:var(--w-hover);color:var(--w-ink)}
+.tabs-top .tab[aria-selected="true"]{background:var(--w-content);color:var(--w-ink);
+      font-weight:550;box-shadow:0 0 0 1px var(--w-hair)}
+.tabs-top .tab span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs-top .newtab{width:28px;height:28px;display:grid;place-items:center;border-radius:6px;
+      color:var(--w-ink-2);margin-left:4px;transition:background .12s}
+.tabs-top .newtab:hover{background:var(--w-hover);color:var(--w-ink)}
+
+.tabs-below{display:none;height:29px;background:var(--w-chrome);
+      border-bottom:1px solid var(--w-hair)}
+.win[data-tabs="below"] .tabs-below{display:flex}
+.tabs-below .tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+      font-size:var(--t-tab);letter-spacing:var(--tt-tab);
+      color:var(--w-ink-2);border-right:1px solid var(--w-hair);
+      transition:background .12s,color .12s;min-width:0;padding:0 10px}
+.tabs-below .tab span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs-below .tab:hover{background:var(--w-hover)}
+.tabs-below .tab[aria-selected="true"]{background:var(--w-sel-soft);color:var(--w-ink);font-weight:550}
+.tabs-below .newtab{width:34px;display:grid;place-items:center;color:var(--w-ink-2)}
+
+/* ── body split ───────────────────────────────────────────────── */
+.body{display:flex;height:498px}
+
+/* ── sidebar : full-height glass over the wallpaper ───────────── */
+.side{width:198px;flex:0 0 auto;display:flex;flex-direction:column;
+      background:var(--w-glass);border-right:1px solid var(--w-hair);
+      backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+      -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+      box-shadow:inset 1px 0 0 var(--w-spec)}
+.side-top{height:44px;flex:0 0 auto;display:flex;align-items:center;gap:2px;padding:0 8px}
+.iconbtn{width:28px;height:26px;display:grid;place-items:center;border-radius:6px;
+      color:var(--w-ink-2);transition:background .1s,color .1s}
+.iconbtn:hover{background:var(--w-hover);color:var(--w-ink)}
+.iconbtn:disabled{opacity:.34}
+.iconbtn:disabled:hover{background:none}
+.side-scroll{flex:1;overflow-y:auto;padding:2px 8px 10px;position:relative}
+.sec{font-size:var(--t-cap);letter-spacing:var(--tt-cap);font-weight:var(--w-emph);
+     color:var(--w-ink-2);padding:11px 8px 4px}
+.sb{display:flex;align-items:center;gap:8px;height:26px;padding:0 8px;width:100%;
+    border-radius:var(--r-pill);color:var(--w-ink);position:relative;z-index:1;transition:color .1s}
+.sb:hover:not([aria-current="true"]){background:var(--w-hover)}
+.sb[aria-current="true"]{color:var(--acc);font-weight:550}
+.sb .ic{opacity:.72}
+.sb[aria-current="true"] .ic{opacity:1}
+.sb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-left:3px}
+/* top:0 pins the pill to the padding box — the same origin the measurement
+   below uses. Left on `auto` it starts at the content box (padding-top lower)
+   and every row ends up offset by exactly that padding. */
+#sbpill{position:absolute;top:0;left:8px;right:8px;height:26px;border-radius:var(--r-pill);
+    background:color-mix(in srgb,var(--acc) 15%,transparent);z-index:0;opacity:0;
+    transition:transform var(--d-pill) var(--e),opacity 120ms linear}
+
+/* ── content column : opaque, so the toolbar glass reads content ─ */
+/* pinned, not flexible: if this were flex:1 the columns would squeeze and
+   spring back while the inspector opens — the one thing we must not do. */
+.content{width:768px;flex:0 0 auto;min-width:0;position:relative;
+    background:var(--w-content);display:flex;flex-direction:column}
+
+/* ── floating head : toolbar (+ list header) over the content ──── */
+.chead{position:absolute;top:0;left:0;right:0;z-index:3}
+.tools{height:44px;display:flex;align-items:center;gap:10px;padding:0 12px}
+.win[data-toolbar="capsule"] .tools{
+       background:var(--w-glass);
+       backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+       -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+       box-shadow:inset 0 1px 0 var(--w-spec)}
+.win[data-toolbar="flat"] .tools{background:var(--w-chrome);border-bottom:1px solid var(--w-hair)}
+
+.loc{font-size:var(--t-head);letter-spacing:var(--tt-head);font-weight:var(--w-emph);
+     margin-right:auto;display:flex;align-items:center;gap:6px;
+     white-space:nowrap;overflow:hidden}
+.loc .chev{opacity:.4;width:12px;height:12px}
+.cap{display:flex;align-items:center;gap:1px;padding:2px;border-radius:var(--r-cap)}
+.win[data-toolbar="capsule"] .cap{background:var(--w-sel-soft);
+     box-shadow:inset 0 1px 0 var(--w-spec),0 1px 2px rgba(0,0,0,.07)}
+.segview{position:relative;display:flex;padding:2px;border-radius:var(--r-cap)}
+.win[data-toolbar="capsule"] .segview{background:var(--w-sel-soft);
+     box-shadow:inset 0 1px 0 var(--w-spec),0 1px 2px rgba(0,0,0,.07)}
+.segview button{width:32px;height:24px;display:grid;place-items:center;border-radius:var(--r-cap);
+     color:var(--w-ink-2);position:relative;z-index:1;transition:color .12s}
+.segview button:hover{color:var(--w-ink)}
+.segview button[aria-pressed="true"]{color:#fff}
+#viewthumb{position:absolute;top:2px;left:2px;width:32px;height:24px;border-radius:var(--r-cap);
+     background:var(--acc);z-index:0;transition:transform var(--d-thumb) var(--e)}
+.search{display:flex;align-items:center;gap:6px;height:26px;width:146px;padding:0 9px;
+     border-radius:var(--r-cap);background:var(--w-sel-soft);color:var(--w-ink-2);
+     box-shadow:inset 0 1px 0 var(--w-spec);
+     font-size:var(--t-tab);letter-spacing:var(--tt-tab);transition:width .22s var(--e)}
+.search:focus-within{width:200px;color:var(--w-ink)}
+.search input{flex:1;min-width:0;border:0;background:none;font:inherit;color:inherit;outline:none}
+
+/* list-view column header — pinned, never scrolls under the glass */
+.lvhead{display:none;grid-template-columns:1fr 108px 92px 96px;gap:12px;
+     padding:0 14px;height:24px;align-items:center;color:var(--w-ink-2);
+     font-size:var(--t-cap);letter-spacing:var(--tt-cap);
+     background:var(--w-content);border-bottom:1px solid var(--w-hair)}
+.win[data-view="list"] .lvhead{display:grid}
+.lvhead span:nth-child(n+2){text-align:right}
+
+/* ── listing ──────────────────────────────────────────────────── */
+.listing{flex:1;overflow:auto;padding-top:var(--head-h)}
+.win[data-view="column"] .listing{overflow:hidden;padding-top:0}
+
+/* list view */
+.lv{display:none}
+.win[data-view="list"] .lv{display:block}
+.row{display:grid;grid-template-columns:1fr 108px 92px 96px;gap:12px;align-items:center;
+     padding:0 14px;height:var(--row);font-variant-numeric:tabular-nums;
+     transition:background 60ms linear}
+.row:nth-child(even){background:var(--w-hover)}
+.row:hover{background:var(--w-sel-soft)}
+.row[aria-selected="true"]{background:var(--acc);color:#fff}
+.row[aria-selected="true"] .meta,.row[aria-selected="true"] .ic{color:#fff;opacity:.86}
+.row .nm{display:flex;align-items:center;gap:9px;min-width:0}
+.row .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{text-align:right;color:var(--w-ink-2);
+     font-size:var(--t-meta);letter-spacing:var(--tt-meta)}
+.row .tagdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+
+/* icon view */
+.iv{display:none;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px;padding:14px}
+.win[data-view="icon"] .iv{display:grid}
+.iv .cell{display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px 5px;
+    border-radius:8px;transition:background 60ms linear}
+.iv .cell:hover{background:var(--w-sel-soft)}
+.iv .cell[aria-selected="true"]{background:var(--acc);color:#fff}
+.iv .thumb{width:54px;height:54px;display:grid;place-items:center}
+.iv .thumb .ic{width:40px;height:40px;stroke-width:1.15}
+.iv .cap2{font-size:var(--t-cap);letter-spacing:var(--tt-cap);
+    text-align:center;line-height:1.3;max-width:100%;
+    overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+
+/* ════════════════════════════════════════════════════════════════
+   ══ COLUMN VIEW — the primary view ═════════════════════════════
+   ════════════════════════════════════════════════════════════════ */
+.cv{display:none;height:100%;overflow-x:auto;overflow-y:hidden;
+    scroll-behavior:smooth;scrollbar-width:thin}
+.win[data-view="column"] .cv{display:flex}
+@media (prefers-reduced-motion:reduce){.cv{scroll-behavior:auto}}
+
+.col{width:var(--col-w);flex:0 0 auto;position:relative;display:flex;flex-direction:column;
+     border-right:1px solid var(--w-hair);min-width:0}
+.col-scroll{flex:1;overflow-y:auto;overflow-x:hidden;
+     padding:calc(var(--head-h) + 4px) 6px 8px;scrollbar-width:thin}
+.col.enter{animation:colin var(--d-col) var(--e) both}
+@keyframes colin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* the draggable divider */
+.grip{position:absolute;top:0;right:-3px;width:7px;height:100%;z-index:4;cursor:col-resize}
+.grip::after{content:"";position:absolute;inset:0 3px;background:var(--acc);
+     opacity:0;transition:opacity .12s}
+.grip:hover::after,.grip.on::after{opacity:.85}
+
+.ci{display:flex;align-items:center;gap:8px;height:var(--row);padding:0 9px;width:100%;
+    border-radius:5px;transition:background 60ms linear}
+.ci:hover:not([data-sel]){background:var(--w-hover)}
+.ci span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;text-align:left}
+.ci .chev{opacity:.42;width:11px;height:11px;margin-left:2px}
+.ci .tagdot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+/* active column: accent fill. ancestor columns: quiet grey, so the route
+   you took stays legible without competing with the live selection */
+.ci[data-sel="active"]{background:var(--acc);color:#fff}
+.ci[data-sel="active"] .chev{opacity:.95}
+.ci[data-sel="idle"]{background:var(--w-sel-idle)}
+
+/* preview column */
+.col.prev{width:var(--prev-w);border-right:0}
+.win[data-preview="off"] .col.prev{display:none}
+.prev-in{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+     gap:11px;padding:calc(var(--head-h) + 18px) 20px 22px;text-align:center;overflow-y:auto}
+.prev-in .big{width:82px;height:82px;stroke-width:.85;opacity:.8}
+.prev-in .pname{font-size:var(--t-title);letter-spacing:var(--tt-title);
+     font-weight:var(--w-emph);line-height:1.35;word-break:break-word}
+.prev-in dl{display:grid;grid-template-columns:auto auto;gap:3px 14px;margin:0;
+     font-size:var(--t-cap);letter-spacing:var(--tt-cap);
+     color:var(--w-ink-2);font-variant-numeric:tabular-nums;max-width:100%}
+.prev-in dt{text-align:right;white-space:nowrap}
+.prev-in dd{margin:0;text-align:left;color:var(--w-ink);overflow-wrap:anywhere}
+.prev-in .tagrow{display:flex;align-items:center;gap:5px;justify-content:center}
+
+/* ── path bar + status ────────────────────────────────────────── */
+.foot{height:26px;flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:0 12px;
+      border-top:1px solid var(--w-hair);background:var(--w-chrome);
+      font-size:var(--t-cap);letter-spacing:var(--tt-cap);
+      color:var(--w-ink-2);overflow:hidden}
+.foot .crumb{white-space:nowrap}
+.foot .crumb.last{color:var(--w-ink);font-weight:550}
+.foot .sep{opacity:.4}
+.foot .count{margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:10px}
+
+/* ── context menu ─────────────────────────────────────────────── */
+.ctx{position:fixed;z-index:60;min-width:216px;padding:5px;border-radius:9px;
+     background:var(--w-glass);border:1px solid var(--w-edge);
+     backdrop-filter:blur(30px) saturate(190%);
+     -webkit-backdrop-filter:blur(30px) saturate(190%);
+     box-shadow:0 12px 34px rgba(0,0,0,.3),inset 0 1px 0 var(--w-spec);
+     font-size:var(--t-body);letter-spacing:var(--tt-body);color:var(--w-ink);
+     animation:ctxin var(--d-menu) var(--e) both;transform-origin:top left}
+@keyframes ctxin{from{opacity:0;transform:scale(.955)}to{opacity:1;transform:none}}
+.ctx .mi{display:flex;align-items:center;gap:9px;height:26px;padding:0 9px;border-radius:5px}
+.ctx .mi:hover{background:var(--acc);color:#fff}
+.ctx .mi kbd{margin-left:auto;font:inherit;font-size:11.5px;opacity:.55}
+.ctx hr{border:0;border-top:1px solid var(--w-hair);margin:4px 7px}
+
+/* ════════════════════════════════════════════════════════════════
+   ══ INSPECTOR ═════════════════════════════════════════════════
+   Not a separate window. The file window GROWS to the right and the
+   settings occupy the new strip. Because the width it gains is exactly
+   the panel's width, .content resolves to the same 768px throughout —
+   the sidebar and columns never reflow while it opens, so whatever you
+   are adjusting stays exactly where you are looking.
+   ════════════════════════════════════════════════════════════════ */
+/* .win and .insp animate their widths on the same clock and curve, and
+   .content is pinned, so the growth lands entirely on the right edge. */
+.win[data-insp="on"]{width:1342px}          /* 966 + 376 */
+/* Reserve the open width up front. A real window keeps its position and grows
+   rightward; if the stage recentred it, the columns being watched would slide. */
+.frame{width:1342px;flex:0 0 auto;margin:auto;display:flex;align-items:center}
+.insp{width:0;transition:width var(--d-panel) var(--e);
+   flex:0 0 auto;overflow:hidden;background:var(--w-glass);
+   backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));
+   -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat))}
+.win[data-insp="on"] .insp{width:376px}
+/* fixed inner width so the contents never squash mid-animation */
+.insp-in{width:376px;height:100%;display:flex;flex-direction:column;
+   border-left:1px solid var(--w-hair);box-shadow:inset 1px 0 0 var(--w-spec);
+   opacity:0;transition:opacity 140ms linear}
+.win[data-insp="on"] .insp-in{opacity:1;transition-delay:60ms}
+
+/* header sits at toolbar height so the two read as one band across the window */
+.p-bar{height:44px;flex:0 0 auto;display:flex;align-items:center;padding:0 8px 0 16px}
+.p-title{font-size:var(--t-head);letter-spacing:var(--tt-head);
+   font-weight:var(--w-emph);margin-right:auto;white-space:nowrap}
+
+.p-tabs{display:flex;gap:2px;margin:0 14px 6px;padding:2px;border-radius:8px;
+   background:var(--w-sel-soft);box-shadow:inset 0 1px 0 var(--w-spec)}
+.p-tabs button{flex:1;min-width:0;padding:5px 2px;border-radius:6px;color:var(--w-ink-2);
+   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+   font-size:var(--t-cap);letter-spacing:var(--tt-cap);transition:background .12s,color .12s}
+.p-tabs button:hover{color:var(--w-ink)}
+.p-tabs button[aria-selected="true"]{background:var(--w-content);color:var(--w-ink);
+   font-weight:var(--w-emph);box-shadow:0 1px 2px rgba(0,0,0,.1)}
+
+/* Spacing is the whole game: 4px grid, and a group break gets twice the row
+   gap so the grouping reads without needing rules. */
+.p-body{flex:1;overflow-y:auto;padding:18px 16px 24px;scrollbar-width:thin}
+.p-pane{display:none;flex-direction:column;gap:17px}
+.p-pane[data-on]{display:flex}
+.p-line{display:flex;align-items:center;justify-content:space-between;gap:14px;
+   min-height:24px}
+.lbl{color:var(--w-ink-2);white-space:nowrap;flex:0 0 auto;
+   font-size:var(--t-meta);letter-spacing:var(--tt-meta)}
+/* a group break: no rule, just air — 17 + 9 + 9 + 17 = 52px of separation */
+.p-pane hr{border:0;height:0;margin:9px 0;width:100%}
+/* the hint belongs to the control above it, so it sits far closer to that
+   than to the next row — proximity does the grouping */
+.p-pane .hint{color:var(--w-ink-2);margin:-12px 0 0;opacity:.85;
+   font-size:var(--t-cap);letter-spacing:var(--tt-cap);line-height:1.55}
+.p-row{display:flex;align-items:center;gap:12px;min-width:0;justify-content:flex-end}
+.p-stack{display:flex;flex-direction:column;gap:11px;align-items:flex-start;width:100%}
+
+/* checkbox / radio rather than switches: settings apply immediately, and a
+   switch implies an on/off device where a checkbox states a fact */
+.insp input[type=checkbox],.insp input[type=radio]{appearance:none;-webkit-appearance:none;
+   width:15px;height:15px;flex:0 0 auto;margin:0;border:1px solid var(--w-ink-2);
+   background:var(--w-content);cursor:pointer;position:relative;transition:all .1s}
+.insp input[type=checkbox]{border-radius:4px}
+.insp input[type=radio]{border-radius:50%}
+.insp input:checked{background:var(--acc);border-color:var(--acc)}
+.insp input[type=checkbox]:checked::after{content:"";position:absolute;left:4.6px;top:1.4px;
+   width:4px;height:8px;border:solid #fff;border-width:0 1.7px 1.7px 0;transform:rotate(43deg)}
+.insp input[type=radio]:checked::after{content:"";position:absolute;inset:3.8px;
+   border-radius:50%;background:#fff}
+.insp label.opt{display:flex;align-items:center;gap:9px;cursor:pointer;white-space:nowrap;
+   min-height:22px}
+
+/* popup button */
+.insp select{appearance:none;-webkit-appearance:none;font:inherit;
+   font-size:var(--t-meta);letter-spacing:var(--tt-meta);color:var(--w-ink);
+   background:var(--w-content);border:1px solid var(--w-hair);border-radius:7px;
+   padding:5px 32px 5px 12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.07);
+   background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),
+                    linear-gradient(135deg,currentColor 50%,transparent 50%);
+   background-position:calc(100% - 14px) calc(50% + 3px),calc(100% - 9px) calc(50% + 3px);
+   background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.insp select:hover{border-color:var(--w-ink-2)}
+
+.insp input[type=range]{width:148px;flex:0 0 auto;accent-color:var(--acc);margin:0}
+.insp .val{font-variant-numeric:tabular-nums;color:var(--w-ink-2);min-width:48px;
+   text-align:right;font-size:var(--t-cap);letter-spacing:var(--tt-cap)}
+.p-sw{display:flex;gap:10px}
+.p-sw button{width:24px;height:24px;border-radius:50%;border:2px solid transparent;
+   cursor:pointer;transition:transform .12s}
+.p-sw button:hover{transform:scale(1.12)}
+.p-sw button[aria-pressed="true"]{border-color:var(--w-ink);
+   box-shadow:0 0 0 2px var(--w-content) inset}
+.p-keys{width:100%;border-collapse:collapse;
+   font-size:var(--t-cap);letter-spacing:var(--tt-cap)}
+.p-keys td{padding:8px 0;border-bottom:1px solid var(--w-hair);color:var(--w-ink-2)}
+.p-keys tr:last-child td{border-bottom:0}
+.p-keys td:last-child{text-align:right;color:var(--w-ink);
+   font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ══ measurement sheet ═════════════════════════════════════════ */
+.sheet{padding:34px 30px 60px;border-top:1px solid var(--hair)}
+.sheet h2{font-family:var(--disp);font-size:15px;font-weight:640;margin-bottom:4px}
+.sheet .lead{font-size:12.5px;color:var(--ink-2);max-width:64ch;margin:0 0 20px}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12px}
+caption{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+        text-transform:uppercase;color:var(--brass);padding-bottom:7px}
+th,td{text-align:left;padding:5px 10px 5px 0;border-bottom:1px solid var(--hair-2);vertical-align:top}
+th{font-weight:600;color:var(--ink-2);font-size:11px}
+td.v{font-family:var(--mono);color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.n{color:var(--ink-3);font-size:11.5px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+
+<header class="masthead">
+  <h1>Oriel — 意匠ベンチ 02</h1>
+  <span class="sub">カラム表示を主軸に / Windows 11 の外殻に載せた独自の意匠</span>
+  <p class="note">カラムは実際に階層をたどれます。フォルダを選ぶと右へ押し出され、先祖カラムの選択は灰色に落ちます。区切り線はドラッグで幅を変えられ、←→↑↓ でも操作できます。</p>
+</header>
+
+<div class="bench">
+  <aside class="rail">
+    <div class="railhd">文字</div>
+
+    <div class="grp">
+      <span class="lab">書体（すべて OFL）</span>
+      <div class="seg" id="g-face" style="flex-wrap:wrap">
+        <button data-face="inter" aria-pressed="true">Inter</button>
+        <button data-face="plex" aria-pressed="false">Plex</button>
+      </div>
+      <div class="seg" id="g-face2" style="flex-wrap:wrap">
+        <button data-face="manrope" aria-pressed="false">Manrope</button>
+        <button data-face="segoe" aria-pressed="false">Segoe（現状）</button>
+      </div>
+      <p class="railnote" id="facenote">Inter + Noto Sans JP。小さいサイズでの可読性が最も高く、和文は Noto。</p>
+    </div>
+
+    <div class="grp">
+      <span class="lab">オプティカルトラッキング</span>
+      <div class="seg" id="g-track">
+        <button data-tk="1" aria-pressed="true">光学調整</button>
+        <button data-tk="0" aria-pressed="false">一律ゼロ</button>
+      </div>
+      <p class="railnote">小さい字は広げ、大きい字は詰める。切り替えて見比べてください。Windows のレトロ感の主因はここです。</p>
+    </div>
+
+    <div class="grp">
+      <label for="wght">本文の太さ</label>
+      <input type="range" id="wght" min="400" max="620" step="10" value="500">
+      <div class="readout"><span id="wghtL">太め</span><span id="wghtV">500</span></div>
+      <p class="railnote">400 は Windows 既定。500 前後まで上げると細さ由来の安っぽさが消えます。上げすぎると和文が潰れるので 520 あたりが上限の目安。</p>
+    </div>
+
+    <div class="grp">
+      <span class="lab">表示言語</span>
+      <div class="seg" id="g-lang">
+        <button data-lang="ja" aria-pressed="true">日本語</button>
+        <button data-lang="en" aria-pressed="false">English</button>
+      </div>
+      <p class="railnote">欧文の見え方を確かめるための暫定切替です。本実装は後工程で言語ファイル方式にします。</p>
+    </div>
+
+    <hr>
+    <div class="railhd">カラム表示</div>
+
+    <div class="grp">
+      <label for="colw">カラム幅</label>
+      <input type="range" id="colw" min="150" max="300" step="2" value="206">
+      <div class="readout"><span>--col-w</span><span id="colwV">206 px</span></div>
+      <p class="railnote">190〜210px あたりが、長いファイル名を切らずに 3 列見せられる境目です。区切り線を直接ドラッグしても変わります。</p>
+    </div>
+
+    <div class="grp">
+      <label for="prevw">プレビュー欄の幅</label>
+      <input type="range" id="prevw" min="180" max="360" step="4" value="250">
+      <div class="readout"><span>--prev-w</span><span id="prevwV">250 px</span></div>
+    </div>
+
+    <div class="grp">
+      <span class="lab">プレビュー欄</span>
+      <div class="seg" id="g-prev">
+        <button data-set="preview" data-val="on" aria-pressed="true">表示</button>
+        <button data-set="preview" data-val="off" aria-pressed="false">隠す</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <span class="lab">先祖カラムの選択</span>
+      <div class="seg" id="g-idle">
+        <button data-idle="grey" aria-pressed="true">灰色に落とす</button>
+        <button data-idle="tint" aria-pressed="false">薄い着色</button>
+      </div>
+      <p class="railnote">灰色なら現在の選択と競合しません。着色のほうが「どの枝をたどったか」は追いやすくなります。</p>
+    </div>
+
+    <hr>
+    <div class="railhd">ウインドウ全体</div>
+
+    <div class="grp">
+      <span class="lab">アプリの外観</span>
+      <div class="seg" id="g-app">
+        <button data-set="appearance" data-val="light" aria-pressed="true">ライト</button>
+        <button data-set="appearance" data-val="dark" aria-pressed="false">ダーク</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <span class="lab">表示形式</span>
+      <div class="seg" id="g-view">
+        <button data-set="view" data-val="column" aria-pressed="true">カラム</button>
+        <button data-set="view" data-val="list" aria-pressed="false">リスト</button>
+        <button data-set="view" data-val="icon" aria-pressed="false">アイコン</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <span class="lab">タブの位置</span>
+      <div class="seg" id="g-tabs">
+        <button data-set="tabs" data-val="titlebar" aria-pressed="true">タイトルバー</button>
+        <button data-set="tabs" data-val="below" aria-pressed="false">ツールバー下</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <span class="lab">ツールバーの質感</span>
+      <div class="seg" id="g-tb">
+        <button data-set="toolbar" data-val="capsule" aria-pressed="true">ガラスのカプセル</button>
+        <button data-set="toolbar" data-val="flat" aria-pressed="false">フラット</button>
+      </div>
+      <p class="railnote">カプセルだとカラムの中身がツールバーの下を流れます。縦にスクロールして確認してください。</p>
+    </div>
+
+    <div class="grp">
+      <label for="dens">行の高さ</label>
+      <input type="range" id="dens" min="20" max="36" step="2" value="26">
+      <div class="readout"><span id="densL">やや詰め</span><span id="densV">26 px</span></div>
+    </div>
+
+    <div class="grp">
+      <label for="blur">ガラスのぼかし量</label>
+      <input type="range" id="blur" min="0" max="48" step="2" value="24">
+      <div class="readout"><span>backdrop blur</span><span id="blurV">24 px</span></div>
+    </div>
+
+    <div class="grp">
+      <span class="lab">アクセントカラー</span>
+      <div class="swatches" id="acc">
+        <button data-acc="#0078D4" style="background:#0078D4" aria-pressed="true" title="Windows 既定"></button>
+        <button data-acc="#2F6FEB" style="background:#2F6FEB" aria-pressed="false" title="青"></button>
+        <button data-acc="#3A8B5C" style="background:#3A8B5C" aria-pressed="false" title="緑"></button>
+        <button data-acc="#8B5CB8" style="background:#8B5CB8" aria-pressed="false" title="紫"></button>
+        <button data-acc="#B85C38" style="background:#B85C38" aria-pressed="false" title="橙"></button>
+        <button data-acc="#5A6570" style="background:#5A6570" aria-pressed="false" title="無彩"></button>
+      </div>
+    </div>
+
+    <p class="railnote">項目を右クリックすると、選択時に裏で組み立て済みのメニューが 0ms で開きます。実装でもこの体感を守ります。</p>
+  </aside>
+
+  <main class="stage">
+    <canvas id="wall" aria-hidden="true"></canvas>
+
+    <div class="frame">
+    <section class="win" id="win" data-appearance="light" data-tabs="titlebar"
+             data-toolbar="capsule" data-view="column" data-preview="on"
+             data-face="inter" data-lang="ja" data-insp="off"
+             aria-label="Oriel ウインドウの意匠見本">
+
+      <div class="tbar">
+        <div class="tabs-top" role="tablist">
+          <button class="tab" role="tab" aria-selected="true">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M1.8 4.2a1.4 1.4 0 0 1 1.4-1.4h3l1.4 1.6h5.2a1.4 1.4 0 0 1 1.4 1.4v6a1.4 1.4 0 0 1-1.4 1.4H3.2a1.4 1.4 0 0 1-1.4-1.4z"/></svg>
+            <span>書類</span>
+          </button>
+          <button class="tab" role="tab" aria-selected="false">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M1.8 4.2a1.4 1.4 0 0 1 1.4-1.4h3l1.4 1.6h5.2a1.4 1.4 0 0 1 1.4 1.4v6a1.4 1.4 0 0 1-1.4 1.4H3.2a1.4 1.4 0 0 1-1.4-1.4z"/></svg>
+            <span>Projects</span>
+          </button>
+          <button class="newtab" title="新しいタブ" aria-label="新しいタブ">
+            <svg class="ic" viewBox="0 0 16 16"><path d="M8 3.6v8.8M3.6 8h8.8"/></svg>
+          </button>
+        </div>
+        <div class="drag"></div>
+        <span class="title">書類</span>
+        <div class="caption">
+          <button aria-label="最小化"><svg viewBox="0 0 10 10"><path d="M0 5h10"/></svg></button>
+          <button aria-label="最大化"><svg viewBox="0 0 10 10"><rect x=".5" y=".5" width="9" height="9" rx="1.2"/></svg></button>
+          <button class="x" aria-label="閉じる"><svg viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10"/></svg></button>
+        </div>
+      </div>
+
+      <div class="tabs-below" role="tablist">
+        <button class="tab" role="tab" aria-selected="true"><span>書類</span></button>
+        <button class="tab" role="tab" aria-selected="false"><span>Projects</span></button>
+        <button class="newtab" aria-label="新しいタブ">
+          <svg class="ic" viewBox="0 0 16 16"><path d="M8 3.6v8.8M3.6 8h8.8"/></svg>
+        </button>
+      </div>
+
+      <div class="body">
+        <nav class="side">
+          <div class="side-top">
+            <button class="iconbtn" title="サイドバーを隠す" aria-label="サイドバーを隠す">
+              <svg class="ic" viewBox="0 0 16 16"><rect x="1.8" y="2.8" width="12.4" height="10.4" rx="2"/><path d="M6.2 2.8v10.4"/></svg>
+            </button>
+            <button class="iconbtn" id="navback" title="戻る" aria-label="戻る">
+              <svg class="ic" viewBox="0 0 16 16"><path d="M9.8 3.4 5.2 8l4.6 4.6"/></svg>
+            </button>
+            <button class="iconbtn" title="進む" aria-label="進む" disabled>
+              <svg class="ic" viewBox="0 0 16 16"><path d="M6.2 3.4 10.8 8l-4.6 4.6"/></svg>
+            </button>
+          </div>
+          <div class="side-scroll" id="sbscroll">
+            <div id="sbpill" aria-hidden="true"></div>
+            <div class="sec">よく使う項目</div>
+            <button class="sb"><svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6"/><path d="M8 4.9V8l2.1 1.3"/></svg><span>最近の項目</span></button>
+            <button class="sb"><svg class="ic" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="8" rx="1.4"/><path d="M5.6 13.4h4.8"/></svg><span>デスクトップ</span></button>
+            <button class="sb" aria-current="true"><svg class="ic" viewBox="0 0 16 16"><path d="M4 1.8h5l3 3v9.4H4z"/><path d="M8.9 1.9v3.1h3.05"/></svg><span>書類</span></button>
+            <button class="sb"><svg class="ic" viewBox="0 0 16 16"><path d="M8 2.6v7.6M4.9 7.3 8 10.4l3.1-3.1M3 13h10"/></svg><span>ダウンロード</span></button>
+            <button class="sb"><svg class="ic" viewBox="0 0 16 16"><path d="m8 2.2 1.76 3.72 4.04.6-2.92 2.9.69 4.08L8 11.57l-3.57 1.93.69-4.08-2.92-2.9 4.04-.6z"/></svg><span>Projects</span></button>
+            <div class="sec">場所</div>
+            <button class="sb"><svg class="ic" viewBox="0 0 16 16"><rect x="1.6" y="3" width="12.8" height="8.2" rx="1.4"/><path d="M4.6 13.6h6.8"/></svg><span>この PC</span></button>
+            <button class="sb"><svg class="ic" viewBox="0 0 16 16"><rect x="1.8" y="4.2" width="12.4" height="7.6" rx="1.6"/><circle cx="4.6" cy="8" r=".9"/></svg><span>ローカル (C:)</span></button>
+            <button class="sb"><svg class="ic" viewBox="0 0 16 16"><path d="M4.4 11.4a2.9 2.9 0 0 1 .3-5.78 3.9 3.9 0 0 1 7.4.9 2.6 2.6 0 0 1-.5 4.88z"/></svg><span>OneDrive</span></button>
+            <div class="sec">タグ</div>
+            <button class="sb"><span class="dot" style="background:#E5544B"></span><span>至急</span></button>
+            <button class="sb"><span class="dot" style="background:#E8A33D"></span><span>確認中</span></button>
+            <button class="sb"><span class="dot" style="background:#4FA96B"></span><span>納品済</span></button>
+            <button class="sb"><span class="dot" style="background:#5A8FD6"></span><span>資料</span></button>
+          </div>
+        </nav>
+
+        <div class="content">
+          <div class="chead">
+            <div class="tools">
+              <span class="loc" id="loc">書類
+                <svg class="ic chev" viewBox="0 0 16 16"><path d="M4 6.4 8 10l4-3.6"/></svg>
+              </span>
+              <div class="segview" id="segview">
+                <div id="viewthumb" aria-hidden="true"></div>
+                <button data-set="view" data-val="column" aria-pressed="true" title="カラム">
+                  <svg class="ic" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.3"/><path d="M6 3v10M10 3v10"/></svg>
+                </button>
+                <button data-set="view" data-val="list" aria-pressed="false" title="リスト">
+                  <svg class="ic" viewBox="0 0 16 16"><path d="M2.4 4.4h11.2M2.4 8h11.2M2.4 11.6h11.2"/></svg>
+                </button>
+                <button data-set="view" data-val="icon" aria-pressed="false" title="アイコン">
+                  <svg class="ic" viewBox="0 0 16 16"><rect x="2.2" y="2.2" width="4.8" height="4.8" rx="1.1"/><rect x="9" y="2.2" width="4.8" height="4.8" rx="1.1"/><rect x="2.2" y="9" width="4.8" height="4.8" rx="1.1"/><rect x="9" y="9" width="4.8" height="4.8" rx="1.1"/></svg>
+                </button>
+              </div>
+              <div class="cap">
+                <button class="iconbtn" title="並べ替え" aria-label="並べ替え">
+                  <svg class="ic" viewBox="0 0 16 16"><path d="M4.6 3v10M2.6 11l2 2 2-2M11.4 13V3M9.4 5l2-2 2 2"/></svg>
+                </button>
+                <button class="iconbtn" title="共有" aria-label="共有">
+                  <svg class="ic" viewBox="0 0 16 16"><path d="M8 10.4V2.4M5.4 5l2.6-2.6L10.6 5M3.4 9.2v3.2a1.2 1.2 0 0 0 1.2 1.2h6.8a1.2 1.2 0 0 0 1.2-1.2V9.2"/></svg>
+                </button>
+                <button class="iconbtn" title="その他" aria-label="その他">
+                  <svg class="ic" viewBox="0 0 16 16"><circle cx="3.6" cy="8" r="1.15"/><circle cx="8" cy="8" r="1.15"/><circle cx="12.4" cy="8" r="1.15"/></svg>
+                </button>
+                <button class="iconbtn" id="opensettings" title="設定… (Ctrl+,)" aria-label="設定">
+                  <svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.3"/><path d="M8 1.4v1.8M8 12.8v1.8M14.6 8h-1.8M3.2 8H1.4M12.7 3.3l-1.3 1.3M4.6 11.4l-1.3 1.3M12.7 12.7l-1.3-1.3M4.6 4.6 3.3 3.3"/></svg>
+                </button>
+              </div>
+              <label class="search">
+                <svg class="ic" viewBox="0 0 16 16"><circle cx="7.1" cy="7.1" r="4.4"/><path d="m10.4 10.4 3 3"/></svg>
+                <input type="search" placeholder="検索" aria-label="このフォルダ内を検索">
+              </label>
+            </div>
+            <div class="lvhead"><span>名前</span><span>変更日</span><span>サイズ</span><span>種類</span></div>
+          </div>
+
+          <div class="listing" id="listing">
+            <div class="lv" id="rows"></div>
+            <div class="iv" id="cells"></div>
+            <div class="cv" id="cols" tabindex="0" role="tree" aria-label="カラム表示"></div>
+          </div>
+
+          <div class="foot">
+            <span id="crumbs"></span>
+            <span class="count" id="count"></span>
+          </div>
+        </div>
+
+        <!-- ══ INSPECTOR — the window grows to hold this; nothing reflows ══ -->
+        <aside class="insp" id="prefs" aria-label="Oriel の設定">
+         <div class="insp-in">
+          <div class="p-bar">
+            <span class="p-title" id="ptitle">外観</span>
+            <button class="iconbtn" id="pclose" title="設定を閉じる" aria-label="設定を閉じる">
+              <svg class="ic" viewBox="0 0 16 16"><path d="M6.2 3.4 10.8 8l-4.6 4.6"/></svg>
+            </button>
+          </div>
+
+          <div class="p-tabs" role="tablist">
+            <button role="tab" data-pane="general" aria-selected="false">一般</button>
+            <button role="tab" data-pane="look" aria-selected="true">外観</button>
+            <button role="tab" data-pane="view" aria-selected="false">表示</button>
+            <button role="tab" data-pane="keys" aria-selected="false">キー操作</button>
+          </div>
+
+          <div class="p-body">
+            <!-- ── 一般 ── -->
+            <div class="p-pane" data-name="一般">
+              <div class="p-line"><span class="lbl">起動時に開く場所</span>
+                <select id="p-start">
+                  <option>前回のタブを復元</option><option>書類</option>
+                  <option>この PC</option><option>デスクトップ</option></select></div>
+
+              <div class="p-line"><span class="lbl">新しいタブ</span>
+                <select id="p-newtab">
+                  <option>同じ場所</option><option>書類</option><option>この PC</option></select></div>
+
+              <div class="p-line"><span class="lbl">表示言語</span>
+                <select id="p-lang">
+                  <option value="ja">日本語</option><option value="en">English</option></select></div>
+              <p class="hint">切り替えは即座に反映されます。再起動は不要です。</p>
+
+              <hr>
+              <div class="p-stack">
+                <label class="opt"><input type="checkbox" id="p-ext" checked>すべての拡張子を表示</label>
+                <label class="opt"><input type="checkbox" id="p-hidden">隠しファイルを表示</label>
+                <label class="opt"><input type="checkbox" id="p-warn" checked>拡張子を変更する前に確認</label>
+              </div>
+            </div>
+
+            <!-- ── 外観 ── -->
+            <div class="p-pane" data-name="外観" data-on>
+              <div class="p-line"><span class="lbl">書体</span>
+                <select id="p-face">
+                  <option value="inter">Inter</option>
+                  <option value="plex">IBM Plex Sans</option>
+                  <option value="manrope">Manrope</option>
+                  <option value="segoe">システムの書体</option></select></div>
+              <p class="hint">和文は書体に合わせて自動で対になります。すべて OFL。</p>
+
+              <div class="p-line"><span class="lbl">本文の太さ</span>
+                <div class="p-row"><input type="range" id="p-wght" min="400" max="620" step="10">
+                  <span class="val" id="p-wghtV">500</span></div></div>
+
+              <div class="p-stack">
+                <label class="opt"><input type="checkbox" id="p-track" checked>サイズに応じて字送りを調整</label>
+              </div>
+              <p class="hint">小さい文字は広げ、大きい文字は詰めます。切ると Windows 標準の一律ゼロになります。</p>
+
+              <hr>
+              <div class="p-line"><span class="lbl">外観</span>
+                <div class="p-row">
+                  <label class="opt"><input type="radio" name="pap" value="light" checked>ライト</label>
+                  <label class="opt"><input type="radio" name="pap" value="dark">ダーク</label>
+                </div></div>
+
+              <div class="p-line"><span class="lbl">アクセントカラー</span>
+                <div class="p-sw" id="p-acc">
+                  <button data-acc="#0078D4" style="background:#0078D4" aria-pressed="true" aria-label="既定"></button>
+                  <button data-acc="#2F6FEB" style="background:#2F6FEB" aria-pressed="false" aria-label="青"></button>
+                  <button data-acc="#3A8B5C" style="background:#3A8B5C" aria-pressed="false" aria-label="緑"></button>
+                  <button data-acc="#8B5CB8" style="background:#8B5CB8" aria-pressed="false" aria-label="紫"></button>
+                  <button data-acc="#B85C38" style="background:#B85C38" aria-pressed="false" aria-label="橙"></button>
+                  <button data-acc="#5A6570" style="background:#5A6570" aria-pressed="false" aria-label="無彩"></button>
+                </div></div>
+
+              <div class="p-line"><span class="lbl">ガラスのぼかし</span>
+                <div class="p-row"><input type="range" id="p-blur" min="0" max="48" step="2">
+                  <span class="val" id="p-blurV">24 px</span></div></div>
+
+              <div class="p-line"><span class="lbl">ツールバー</span>
+                <div class="p-row">
+                  <label class="opt"><input type="radio" name="ptb" value="capsule" checked>ガラス</label>
+                  <label class="opt"><input type="radio" name="ptb" value="flat">フラット</label>
+                </div></div>
+            </div>
+
+            <!-- ── 表示 ── -->
+            <div class="p-pane" data-name="表示">
+              <div class="p-line"><span class="lbl">既定の表示形式</span>
+                <select id="p-view">
+                  <option value="column">カラム</option><option value="list">リスト</option>
+                  <option value="icon">アイコン</option></select></div>
+
+              <div class="p-line"><span class="lbl">行の高さ</span>
+                <div class="p-row"><input type="range" id="p-row" min="20" max="36" step="2">
+                  <span class="val" id="p-rowV">26 px</span></div></div>
+
+              <hr>
+              <div class="p-line"><span class="lbl">カラム幅</span>
+                <div class="p-row"><input type="range" id="p-colw" min="150" max="300" step="2">
+                  <span class="val" id="p-colwV">206 px</span></div></div>
+              <p class="hint">個々のカラムは区切り線をドラッグしても変えられます。</p>
+
+              <div class="p-stack">
+                <label class="opt"><input type="checkbox" id="p-prev" checked>プレビュー欄を右端に表示</label>
+              </div>
+
+              <div class="p-line"><span class="lbl">その幅</span>
+                <div class="p-row"><input type="range" id="p-prevw" min="180" max="360" step="4">
+                  <span class="val" id="p-prevwV">250 px</span></div></div>
+
+              <div class="p-line"><span class="lbl">たどった経路</span>
+                <div class="p-row">
+                  <label class="opt"><input type="radio" name="pidle" value="grey" checked>灰色</label>
+                  <label class="opt"><input type="radio" name="pidle" value="tint">アクセント色</label>
+                </div></div>
+              <p class="hint">左側のカラムに残る選択の見せ方です。</p>
+
+              <hr>
+              <span class="lbl">タブの位置</span>
+              <div class="p-stack">
+                <label class="opt"><input type="radio" name="ptabs" value="titlebar" checked>タイトルバー</label>
+                <label class="opt"><input type="radio" name="ptabs" value="below">ツールバーの下</label>
+              </div>
+            </div>
+
+            <!-- ── キー操作 ── -->
+            <div class="p-pane" data-name="キー操作">
+              <span class="lbl">作法</span>
+              <div class="p-stack">
+                <label class="opt"><input type="radio" name="pkeys" value="oriel" checked>Oriel 標準</label>
+                <label class="opt"><input type="radio" name="pkeys" value="win">Windows 標準</label>
+                <label class="opt"><input type="radio" name="pkeys" value="mix">併用</label>
+              </div>
+              <p class="hint" id="p-keyhint">Enter は名前の変更、Ctrl+↓ で開きます。Windows の習慣で Enter を押すと意図せず名前の変更が始まる点にご注意ください。</p>
+              <hr>
+              <table class="p-keys" id="p-keytable"></table>
+            </div>
+          </div>
+         </div>
+        </aside>
+      </div>
+    </section>
+    </div>
+  </main>
+</div>
+
+<section class="sheet">
+  <h2>計測シート</h2>
+  <p class="lead">確定した値はそのまま <code>oriel::metrics</code> の定数になります。カラム表示が主軸なので、上段の3表を優先して詰めてください。</p>
+
+  <div class="tables">
+    <div class="tw"><table>
+      <caption>文字</caption>
+      <tr><th>役割</th><th>サイズ・字送り</th><th>備考</th></tr>
+      <tr><td>書体</td><td class="v" id="m-face">Inter</td><td class="n">欧文 + 対の和文、全て OFL</td></tr>
+      <tr><td>本文の太さ</td><td class="v" id="m-wght">500</td><td class="n">可変フォントなので中間値が使える</td></tr>
+      <tr><td>字送り</td><td class="v" id="m-track">サイズ依存</td><td class="n">下の表に従う</td></tr>
+      <tr><td>本文 / 一覧・カラム</td><td class="v">13 px ・ 0</td><td class="n">全体の基準サイズ</td></tr>
+      <tr><td>メタ情報</td><td class="v">12 px ・ +0.004em</td><td class="n">日付・サイズ・種類</td></tr>
+      <tr><td>小見出し・パスバー</td><td class="v">11 px ・ +0.009em</td><td class="n">小さいほど広げる</td></tr>
+      <tr><td>タブ・検索</td><td class="v">12.5 px ・ +0.002em</td><td class="n">ほぼ中立点</td></tr>
+      <tr><td>プレビュー名</td><td class="v">13.5 px ・ −0.005em</td><td class="n">ここから詰め始める</td></tr>
+      <tr><td>現在地（ツールバー）</td><td class="v">15 px ・ −0.011em</td><td class="n">大きいほど詰める</td></tr>
+      <tr><td>行間</td><td class="v">1.25</td><td class="n">Windows 既定の 1.5 前後は緩すぎる</td></tr>
+      <tr><td>スムージング</td><td class="v">subpixel</td><td class="n">antialiased は線を痩せさせる</td></tr>
+      <tr><td>数字</td><td class="v">tabular-nums</td><td class="n">桁を揃える</td></tr>
+    </table></div>
+
+    <div class="tw"><table>
+      <caption>カラム表示</caption>
+      <tr><th>項目</th><th>値</th><th>備考</th></tr>
+      <tr><td>カラム幅（既定）</td><td class="v" id="m-colw">206 px</td><td class="n">個別ドラッグは実装で対応、既定値はこれ</td></tr>
+      <tr><td>プレビュー欄の幅</td><td class="v" id="m-prevw">250 px</td><td class="n">ブラウズ列より広く取る</td></tr>
+      <tr><td>行の高さ</td><td class="v" id="m-row">26 px</td><td class="n">アイコン16px + 上下5px</td></tr>
+      <tr><td>選択（作業中の列）</td><td class="v">アクセント塗り</td><td class="n">文字は白</td></tr>
+      <tr><td>選択（先祖の列）</td><td class="v" id="m-idle">灰 11.5%</td><td class="n">たどった経路を残す</td></tr>
+      <tr><td>区切り線</td><td class="v">1 px / 掴み代 7 px</td><td class="n">当たり判定は線より広く</td></tr>
+      <tr><td>押し出し</td><td class="v">260 ms・右から20px</td><td class="n">段ごとに45msずらす</td></tr>
+    </table></div>
+
+    <div class="tw"><table>
+      <caption>寸法</caption>
+      <tr><th>項目</th><th>値</th><th>備考</th></tr>
+      <tr><td>タイトルバー高</td><td class="v">34 px</td><td class="n">キャプションは 46×32、Win11 準拠</td></tr>
+      <tr><td>ツールバー高</td><td class="v">44 px</td><td class="n">サイドバー上端と同じ高さ</td></tr>
+      <tr><td>サイドバー幅</td><td class="v">198 px</td><td class="n">160–320 で可変</td></tr>
+      <tr><td>パスバー高</td><td class="v">26 px</td><td class="n">パンくず＋件数</td></tr>
+      <tr><td>ウインドウ角丸</td><td class="v">10 px</td><td class="n">Win11 標準の 8 よりわずかに大きく取る</td></tr>
+    </table></div>
+
+    <div class="tw"><table>
+      <caption>ガラスと動き</caption>
+      <tr><th>項目</th><th>値</th><th>備考</th></tr>
+      <tr><td>ぼかし量</td><td class="v" id="m-blur">24 px</td><td class="n">Composition の Gaussian 半径</td></tr>
+      <tr><td>彩度持ち上げ</td><td class="v">190 %</td><td class="n">ガラスらしさの主因</td></tr>
+      <tr><td>鏡面ハイライト</td><td class="v">上辺 1 px</td><td class="n">明 72% / 暗 16%</td></tr>
+      <tr><td>ホバー</td><td class="v">60 ms / linear</td><td class="n">遅延ゼロが最優先</td></tr>
+      <tr><td>サイドバー選択</td><td class="v">180 ms</td><td class="n">ピルが滑る</td></tr>
+      <tr><td>右クリック</td><td class="v">0 ms → 110 ms</td><td class="n">構築済み。出現のみ演出</td></tr>
+      <tr><td>共通イージング</td><td class="v">(.32,.72,0,1)</td><td class="n">全アニメで単一の曲線</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const win = document.getElementById('win');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── wallpaper: drifting light, so the glass has something to sample ── */
+  const cvs = document.getElementById('wall'), cx = cvs.getContext('2d');
+  const blobs = [
+    {x:.22,y:.28,r:.52,c:[ 38, 78,140], p:0},
+    {x:.78,y:.22,r:.46,c:[126, 62,118], p:2.1},
+    {x:.62,y:.82,r:.58,c:[ 24,108,112], p:4.2},
+    {x:.12,y:.86,r:.40,c:[152, 96, 48], p:1.3}
+  ];
+  function sizeWall(){
+    const d = Math.min(devicePixelRatio||1,2);
+    cvs.width = Math.max(1,cvs.clientWidth*d); cvs.height = Math.max(1,cvs.clientHeight*d);
+  }
+  function paint(t){
+    const w=cvs.width,h=cvs.height,m=Math.max(w,h);
+    const dark = document.documentElement.dataset.theme==='dark' ||
+      (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme:dark)').matches);
+    cx.fillStyle = dark ? '#0B0E13' : '#C9D2DC';
+    cx.fillRect(0,0,w,h);
+    cx.globalCompositeOperation='lighter';
+    for(const b of blobs){
+      const dx = reduce?0:Math.sin(t/9000+b.p)*.045;
+      const dy = reduce?0:Math.cos(t/11000+b.p)*.038;
+      const g = cx.createRadialGradient((b.x+dx)*w,(b.y+dy)*h,0,(b.x+dx)*w,(b.y+dy)*h,b.r*m);
+      const a = dark?.55:.42;
+      g.addColorStop(0,`rgba(${b.c[0]},${b.c[1]},${b.c[2]},${a})`);
+      g.addColorStop(1,`rgba(${b.c[0]},${b.c[1]},${b.c[2]},0)`);
+      cx.fillStyle=g; cx.fillRect(0,0,w,h);
+    }
+    cx.globalCompositeOperation='source-over';
+  }
+  function loop(t){ paint(t); if(!reduce) requestAnimationFrame(loop); }
+  sizeWall(); requestAnimationFrame(loop);
+  addEventListener('resize',()=>{ sizeWall(); if(reduce) paint(0); });
+
+  /* ── icons ─────────────────────────────────────────────────── */
+  const ICONS = {
+    folder:'<path d="M1.8 4.2a1.4 1.4 0 0 1 1.4-1.4h3l1.4 1.6h5.2a1.4 1.4 0 0 1 1.4 1.4v6a1.4 1.4 0 0 1-1.4 1.4H3.2a1.4 1.4 0 0 1-1.4-1.4z"/>',
+    doc:'<path d="M4 1.8h5l3 3v9.4H4z"/><path d="M8.9 1.9v3.1h3.05"/>',
+    pdf:'<path d="M4 1.8h5l3 3v9.4H4z"/><path d="M8.9 1.9v3.1h3.05"/><path d="M6 10.9h4"/>',
+    img:'<rect x="1.8" y="3" width="12.4" height="10" rx="1.5"/><circle cx="5.6" cy="6.4" r="1.1"/><path d="m2.4 11.4 3.4-3.2 3 2.8 2-1.8 2.8 2.6"/>',
+    zip:'<path d="M4 1.8h5l3 3v9.4H4z"/><path d="M8.9 1.9v3.1h3.05"/><path d="M6.4 3.4h1.2M6.4 5.4h1.2M6.4 7.4h1.2"/>',
+    aud:'<path d="M11.6 2.6v7.2"/><circle cx="9.4" cy="10.4" r="2.2"/><path d="M11.6 2.6 6.2 4.2v7"/><circle cx="4" cy="11.6" r="2.2"/>',
+    code:'<path d="M5.6 5.2 2.6 8l3 2.8M10.4 5.2 13.4 8l-3 2.8M9.2 3.4 6.8 12.6"/>'
+  };
+  const KIND = {folder:'フォルダ',doc:'書類',pdf:'PDF 書類',img:'PNG 画像',
+                zip:'圧縮フォルダ',aud:'オーディオ',code:'ソースコード'};
+  const svg = (k,cls='ic') => `<svg class="${cls}" viewBox="0 0 16 16">${ICONS[k]||ICONS.doc}</svg>`;
+
+  /* ── the tree that column view actually walks ──────────────── */
+  const F = (n,k,size,mod,tag) => ({n,k,size,mod,tag});
+  const TREE = {n:'書類',k:'folder',kids:[
+    {n:'CallDeck',k:'folder',mod:'2026/07/24',kids:[
+      {n:'戦略',k:'folder',mod:'2026/07/24',kids:[
+        F('市場調査_2026Q2.pdf','pdf','1.8 MB','2026/07/22','#5A8FD6'),
+        F('競合比較.xlsx','doc','96 KB','2026/07/20',null),
+        F('価格設計メモ.md','doc','8 KB','2026/07/24','#E8A33D')
+      ]},
+      {n:'設計',k:'folder',mod:'2026/07/23',kids:[
+        F('通話フロー.png','img','1.2 MB','2026/07/23',null),
+        F('SECURITY.md','doc','14 KB','2026/07/19','#E5544B'),
+        F('api_spec.ts','code','22 KB','2026/07/23',null)
+      ]},
+      {n:'議事録',k:'folder',mod:'2026/07/18',kids:[
+        F('0712_定例.md','doc','6 KB','2026/07/12',null),
+        F('0718_PoC 振り返り.md','doc','9 KB','2026/07/18','#4FA96B')
+      ]},
+      F('README.md','doc','5 KB','2026/07/24',null)
+    ]},
+    {n:'TheoryOS',k:'folder',mod:'2026/07/21',kids:[
+      {n:'運用',k:'folder',mod:'2026/07/21',kids:[
+        F('VPS 手順.md','doc','12 KB','2026/07/21','#5A8FD6'),
+        F('バックアップ計画.md','doc','7 KB','2026/07/15',null)
+      ]},
+      {n:'研究法',k:'folder',mod:'2026/07/10',kids:[
+        F('ACT-R 整理.md','doc','18 KB','2026/07/08',null),
+        F('Lakatos 要約.md','doc','11 KB','2026/07/10',null),
+        F('MAP-Elites 実験.ipynb','code','340 KB','2026/07/09',null)
+      ]},
+      F('v0.9 リリースノート.md','doc','9 KB','2026/07/21','#4FA96B')
+    ]},
+    {n:'Oriel',k:'folder',mod:'2026/07/26',kids:[
+      /* deliberately long — a short column can't show content tucking
+         under the glass toolbar, which is the effect being judged */
+      {n:'意匠',k:'folder',mod:'2026/07/26',kids:[
+        F('ベンチ 01.html','code','28 KB','2026/07/26','#E8A33D'),
+        F('カラム表示 検討.md','doc','11 KB','2026/07/26','#E8A33D'),
+        F('配色メモ.md','doc','4 KB','2026/07/26',null),
+        F('サイドバー 階層.md','doc','6 KB','2026/07/25',null),
+        F('ツールバー 配置案.png','img','840 KB','2026/07/25','#5A8FD6'),
+        F('ガラス 材質検証.md','doc','9 KB','2026/07/25','#E8A33D'),
+        F('アイコン 一覧.svg','code','62 KB','2026/07/24',null),
+        F('アイコン 線幅比較.png','img','1.1 MB','2026/07/24',null),
+        F('タイポ 階層.md','doc','5 KB','2026/07/24',null),
+        F('行高 比較.png','img','620 KB','2026/07/23',null),
+        F('選択色 検証.md','doc','3 KB','2026/07/23',null),
+        F('プレビュー欄 案A.png','img','980 KB','2026/07/23',null),
+        F('プレビュー欄 案B.png','img','1.0 MB','2026/07/23',null),
+        F('モーション 曲線.md','doc','7 KB','2026/07/22','#4FA96B'),
+        F('押し出し 尺検討.md','doc','4 KB','2026/07/22',null),
+        F('右クリック 構築順.md','doc','8 KB','2026/07/22','#E5544B'),
+        F('キャプション 収まり.png','img','410 KB','2026/07/21',null),
+        F('タブ位置 比較.png','img','760 KB','2026/07/21',null),
+        F('パスバー 検討.md','doc','3 KB','2026/07/20',null),
+        F('ダークモード 調整.md','doc','6 KB','2026/07/20',null),
+        F('角丸 同心円.md','doc','4 KB','2026/07/19',null),
+        F('計測シート 草案.md','doc','12 KB','2026/07/19',null)
+      ]},
+      {n:'調査',k:'folder',mod:'2026/07/26',kids:[
+        F('ダイアログ置換 方式比較.md','doc','16 KB','2026/07/26','#E5544B'),
+        F('Files 構造メモ.md','doc','13 KB','2026/07/26',null)
+      ]}
+    ]},
+    {n:'契約',k:'folder',mod:'2026/07/12',kids:[
+      F('契約書_控え.docx','doc','62 KB','2026/07/12','#4FA96B'),
+      F('請求書_2026-07.pdf','pdf','184 KB','2026/07/19','#E5544B')
+    ]},
+    F('収支表.xlsx','doc','48 KB','2026/07/09',null),
+    F('素材一式.zip','zip','318 MB','2026/06/30',null),
+    F('打合せ録音.m4a','aud','27 MB','2026/06/28',null)
+  ]};
+
+  /* path = index chosen at each depth */
+  let path = [2,0,1];   /* 書類 › Oriel › 意匠 › カラム表示 検討.md */
+  let idleStyle = 'grey';
+
+  const colsEl = document.getElementById('cols');
+  const crumbsEl = document.getElementById('crumbs');
+  const countEl = document.getElementById('count');
+  const locEl = document.getElementById('loc');
+
+  /* build the list of columns implied by `path` */
+  function chain(){
+    const out=[]; let node=TREE;
+    for(let d=0; ;d++){
+      out.push({items:node.kids, sel:d<path.length?path[d]:-1, depth:d});
+      const s = d<path.length ? node.kids[path[d]] : null;
+      if(!s) break;
+      if(s.kids){ node=s; continue; }
+      out.push({preview:s, depth:d}); break;
+    }
+    /* selected a folder at the end → its children column is already pushed */
+    return out;
+  }
+
+  /* A column is animated only when it is genuinely NEW. Picking a different
+     file in the same folder leaves every column's identity unchanged, so
+     nothing should slide — only the selection moves. */
+  let prevKeys = [];
+  function renderColumns(){
+    const cols = chain();
+    const keys = cols.map(c => (c.preview?'p:':'b:') + path.slice(0,c.depth).join('/'));
+    const fresh = keys.map(k => !prevKeys.includes(k));
+    prevKeys = keys;
+    colsEl.innerHTML = cols.map((c,i)=>{
+      if(c.preview){
+        const f=c.preview;
+        /* L/K resolve at call time, after the language tables are initialised */
+        const L=s=> lang==='en' ? (PREV_EN[s]||DICT[s]||s) : s;
+        const K=k=> lang==='en' ? KIND_EN[k] : KIND[k];
+        return `<div class="col prev"${fresh[i]?' data-enter="1"':''}><div class="prev-in">
+          ${svg(f.k,'ic big')}
+          <div class="pname">${f.n}</div>
+          <dl>
+            <dt>${L('種類')}</dt><dd>${K(f.k)}</dd>
+            <dt>${L('サイズ')}</dt><dd>${f.size||'—'}</dd>
+            <dt>${L('変更日')}</dt><dd>${f.mod||'—'}</dd>
+          </dl>
+          ${f.tag?`<div class="tagrow"><span class="tagdot" style="background:${f.tag};width:9px;height:9px;border-radius:50%"></span><span style="font-size:var(--t-cap);letter-spacing:var(--tt-cap);color:var(--w-ink-2)">${L('タグ付き')}</span></div>`:''}
+        </div></div>`;
+      }
+      const rows = c.items.map((it,j)=>{
+        const state = j!==c.sel ? '' :
+          (c.depth===path.length-1 ? ' data-sel="active"' : ' data-sel="idle"');
+        return `<button class="ci"${state} data-d="${c.depth}" data-i="${j}">
+          ${svg(it.k)}<span>${it.n}</span>
+          ${it.tag?`<span class="tagdot" style="background:${it.tag}"></span>`:''}
+          ${it.kids?`<svg class="ic chev" viewBox="0 0 16 16"><path d="M6.2 3.4 10.8 8l-4.6 4.6"/></svg>`:''}
+        </button>`;
+      }).join('');
+      return `<div class="col"${fresh[i]?' data-enter="1"':''}>
+        <div class="col-scroll">${rows}</div>
+        <div class="grip" data-grip="1"></div></div>`;
+    }).join('');
+
+    /* stagger the push-in only for newly revealed columns */
+    if(!reduce){
+      let k=0;
+      colsEl.querySelectorAll('[data-enter]').forEach(el=>{
+        el.classList.add('enter');
+        el.style.animationDelay = (k++*45)+'ms';
+      });
+    }
+
+    /* breadcrumb + count + toolbar title */
+    /* root label comes from TREE so it follows the language switch */
+    const names=[TREE.n]; const folders=[TREE.n]; let node=TREE;
+    for(let d=0;d<path.length;d++){ const s=node.kids[path[d]]; if(!s) break;
+      names.push(s.n); if(s.kids){ folders.push(s.n); node=s; } }
+    crumbsEl.innerHTML = names.map((n,i)=>
+      `${i?'<span class="sep"> › </span>':''}<span class="crumb${i===names.length-1?' last':''}">${n}</span>`
+    ).join('');
+    const lastCol = cols.filter(c=>!c.preview).pop();
+    countEl.textContent = !lastCol ? '' :
+      (lang==='en' ? `${lastCol.items.length} items` : `${lastCol.items.length} 項目`);
+    /* the toolbar names the folder being browsed, never the selected file */
+    locEl.firstChild.nodeValue = folders[folders.length-1];
+
+    requestAnimationFrame(()=>{ colsEl.scrollLeft = colsEl.scrollWidth; });
+  }
+
+  colsEl.addEventListener('click',e=>{
+    const b=e.target.closest('.ci'); if(!b) return;
+    const d=+b.dataset.d, i=+b.dataset.i;
+    path = path.slice(0,d); path[d]=i;
+    renderColumns();
+    colsEl.focus({preventScroll:true});
+  });
+
+  /* keyboard: ↑↓ within a column, ←→ across columns */
+  colsEl.addEventListener('keydown',e=>{
+    if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) return;
+    e.preventDefault();
+    const d = path.length-1;
+    let node=TREE; for(let k=0;k<d;k++) node=node.kids[path[k]];
+    const items=node.kids;
+    if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+      const next=Math.min(items.length-1,Math.max(0,path[d]+(e.key==='ArrowDown'?1:-1)));
+      path[d]=next; renderColumns();
+    } else if(e.key==='ArrowLeft'){
+      if(path.length>1){ path=path.slice(0,-1); renderColumns(); }
+    } else {
+      const sel=items[path[d]];
+      if(sel && sel.kids){ path.push(0); renderColumns(); }
+    }
+  });
+
+  document.getElementById('navback').addEventListener('click',()=>{
+    if(path.length>1){ path=path.slice(0,-1); renderColumns(); }
+  });
+
+  /* column resize by dragging a divider — uniform, so the value is decidable */
+  let drag=null;
+  colsEl.addEventListener('pointerdown',e=>{
+    const g=e.target.closest('.grip'); if(!g) return;
+    e.preventDefault(); g.classList.add('on');
+    drag={g, x:e.clientX, w:parseFloat(getComputedStyle(win).getPropertyValue('--col-w'))};
+    g.setPointerCapture(e.pointerId);
+  });
+  colsEl.addEventListener('pointermove',e=>{
+    if(!drag) return;
+    const w=Math.max(150,Math.min(300,Math.round((drag.w+e.clientX-drag.x)/2)*2));
+    win.style.setProperty('--col-w',w+'px');
+    colw.value=w; colwV.textContent=w+' px'; mColw.textContent=w+' px';
+  });
+  addEventListener('pointerup',()=>{ if(drag){ drag.g.classList.remove('on'); drag=null; } });
+
+  /* ── flat views ────────────────────────────────────────────── */
+  const flat = TREE.kids;
+  document.getElementById('rows').innerHTML = flat.map((f,i)=>`
+    <div class="row" aria-selected="${i===2}">
+      <span class="nm">${svg(f.k)}<span>${f.n}</span>${f.tag?`<span class="tagdot" style="background:${f.tag}"></span>`:''}</span>
+      <span class="meta">${f.mod||'—'}</span><span class="meta">${f.size||'—'}</span>
+      <span class="meta">${KIND[f.k]}</span>
+    </div>`).join('');
+  document.getElementById('cells').innerHTML = flat.map((f,i)=>`
+    <div class="cell" aria-selected="${i===2}"><div class="thumb">${svg(f.k)}</div>
+    <div class="cap2">${f.n}</div></div>`).join('');
+
+  /* ── sidebar sliding pill ──────────────────────────────────── */
+  const pill=document.getElementById('sbpill'), scroll=document.getElementById('sbscroll');
+  function movePill(el,animate){
+    if(!el) return;
+    /* rect-based so it stays exact when the list is scrolled, and free of the
+       sub-pixel drift offsetTop rounds away */
+    const y = el.getBoundingClientRect().top
+            - scroll.getBoundingClientRect().top + scroll.scrollTop;
+    if(!animate) pill.style.transition='none';
+    pill.style.transform=`translateY(${y}px)`; pill.style.opacity='1';
+    if(!animate) requestAnimationFrame(()=>pill.style.transition='');
+  }
+  scroll.addEventListener('scroll',()=>
+    movePill(scroll.querySelector('[aria-current="true"]'),false),{passive:true});
+  scroll.querySelectorAll('.sb').forEach(b=>b.addEventListener('click',()=>{
+    scroll.querySelectorAll('.sb').forEach(x=>x.removeAttribute('aria-current'));
+    b.setAttribute('aria-current','true'); movePill(b,true);
+  }));
+
+  /* ── view switcher ─────────────────────────────────────────── */
+  const thumb=document.getElementById('viewthumb');
+  const vbtns=[...document.querySelectorAll('#segview button')];
+  function setView(v,animate){
+    win.dataset.view=v;
+    vbtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.val===v)));
+    const i=vbtns.findIndex(b=>b.dataset.val===v);
+    if(!animate) thumb.style.transition='none';
+    thumb.style.transform=`translateX(${i*32}px)`;
+    if(!animate) requestAnimationFrame(()=>thumb.style.transition='');
+    document.querySelectorAll('#g-view button').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.val===v)));
+    if(v==='column') renderColumns();
+    measureHead();
+  }
+  vbtns.forEach(b=>b.addEventListener('click',()=>setView(b.dataset.val,true)));
+
+  /* ── rail ──────────────────────────────────────────────────── */
+  document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+    if(b.dataset.idle){
+      idleStyle=b.dataset.idle; win.dataset.idle=idleStyle;
+      win.style.setProperty('--w-sel-idle', idleStyle==='tint'
+        ? 'color-mix(in srgb,var(--acc) 22%,transparent)' : '');
+      document.getElementById('m-idle').textContent = idleStyle==='tint'?'アクセント 22%':'灰 11.5%';
+      b.parentElement.querySelectorAll('button').forEach(x=>
+        x.setAttribute('aria-pressed',String(x===b)));
+      return;
+    }
+    const k=b.dataset.set, v=b.dataset.val;
+    if(k==='view'){ setView(v,true); return; }
+    win.dataset[k]=v;
+    b.parentElement.querySelectorAll('button').forEach(x=>
+      x.setAttribute('aria-pressed',String(x===b)));
+    requestAnimationFrame(()=>{
+      movePill(scroll.querySelector('[aria-current="true"]'),false); measureHead();
+    });
+  }));
+
+  const colw=document.getElementById('colw'), colwV=document.getElementById('colwV'),
+        mColw=document.getElementById('m-colw');
+  colw.addEventListener('input',()=>{
+    win.style.setProperty('--col-w',colw.value+'px');
+    colwV.textContent=colw.value+' px'; mColw.textContent=colw.value+' px';
+  });
+  const prevw=document.getElementById('prevw'), prevwV=document.getElementById('prevwV'),
+        mPrevw=document.getElementById('m-prevw');
+  prevw.addEventListener('input',()=>{
+    win.style.setProperty('--prev-w',prevw.value+'px');
+    prevwV.textContent=prevw.value+' px'; mPrevw.textContent=prevw.value+' px';
+  });
+  const dens=document.getElementById('dens'), densV=document.getElementById('densV'),
+        densL=document.getElementById('densL'), mRow=document.getElementById('m-row');
+  dens.addEventListener('input',()=>{
+    const v=+dens.value;
+    win.style.setProperty('--row',v+'px');
+    win.style.setProperty('--t-body',(11.5+v*.055).toFixed(1)+'px');
+    densV.textContent=v+' px'; mRow.textContent=v+' px';
+    densL.textContent = v<=22?'詰め':v<=28?'やや詰め':'ゆったり';
+  });
+  const blur=document.getElementById('blur'), blurV=document.getElementById('blurV'),
+        mBlur=document.getElementById('m-blur');
+  blur.addEventListener('input',()=>{
+    win.style.setProperty('--glass-blur',blur.value+'px');
+    blurV.textContent=blur.value+' px'; mBlur.textContent=blur.value+' px';
+  });
+  document.querySelectorAll('#acc button').forEach(b=>b.addEventListener('click',()=>{
+    win.style.setProperty('--acc',b.dataset.acc);
+    document.querySelectorAll('#acc button').forEach(x=>
+      x.setAttribute('aria-pressed',String(x===b)));
+  }));
+
+  /* ── head height drives how far content tucks under the glass ─ */
+  const chead=document.querySelector('.chead');
+  function measureHead(){
+    win.style.setProperty('--head-h', Math.round(chead.getBoundingClientRect().height)+'px');
+  }
+  new ResizeObserver(measureHead).observe(chead);
+
+  /* ── selection + instant context menu ──────────────────────── */
+  const listing=document.getElementById('listing');
+  let menu=null;
+  const closeMenu=()=>{ menu?.remove(); menu=null; };
+  listing.addEventListener('click',e=>{
+    const it=e.target.closest('.row,.cell'); if(!it) return;
+    it.parentElement.querySelectorAll('[aria-selected]').forEach(x=>
+      x.setAttribute('aria-selected','false'));
+    it.setAttribute('aria-selected','true'); closeMenu();
+  });
+  listing.addEventListener('contextmenu',e=>{
+    const it=e.target.closest('.row,.cell,.ci'); if(!it) return;
+    e.preventDefault(); closeMenu();
+    if(it.classList.contains('ci')) it.click();
+    menu=document.createElement('div'); menu.className='ctx';
+    menu.innerHTML=`
+      <div class="mi">開く<kbd>Enter</kbd></div>
+      <div class="mi">プログラムから開く</div>
+      <div class="mi">プレビュー<kbd>Space</kbd></div>
+      <hr>
+      <div class="mi">切り取り<kbd>Ctrl+X</kbd></div>
+      <div class="mi">コピー<kbd>Ctrl+C</kbd></div>
+      <div class="mi">複製<kbd>Ctrl+D</kbd></div>
+      <hr>
+      <div class="mi">名前を変更<kbd>F2</kbd></div>
+      <div class="mi">タグを付ける…</div>
+      <div class="mi">情報を見る<kbd>Ctrl+I</kbd></div>`;
+    const st=getComputedStyle(win);
+    ['--w-glass','--w-edge','--w-spec','--w-hair','--w-ink','--acc'].forEach(v=>
+      menu.style.setProperty(v, st.getPropertyValue(v)));
+    menu.style.fontFamily=st.fontFamily;
+    menu.style.left=Math.min(e.clientX, innerWidth-236)+'px';
+    menu.style.top =Math.min(e.clientY, innerHeight-330)+'px';
+    document.body.appendChild(menu);
+  });
+  addEventListener('click',e=>{ if(menu && !menu.contains(e.target)) closeMenu(); });
+  addEventListener('keydown',e=>{ if(e.key==='Escape') closeMenu(); });
+
+  /* ── typeface, tracking, weight ────────────────────────────── */
+  const FACE_NOTE={
+    inter:'Inter + Noto Sans JP。11〜13px での可読性が最も高く、和文は Noto。無難だが最も外さない。',
+    plex:'IBM Plex Sans + IBM Plex Sans JP。欧文と和文が同一設計なので寸法が揃う。やや硬質で個性あり。',
+    manrope:'Manrope + Zen Kaku Gothic New。幾何学的で最も垢抜けるが、長い一覧では字面が均一すぎる恐れ。',
+    segoe:'Windows 既定。比較用の基準線として置いています。'
+  };
+  document.querySelectorAll('#g-face button,#g-face2 button').forEach(b=>
+    b.addEventListener('click',()=>{
+      win.dataset.face=b.dataset.face;
+      document.querySelectorAll('#g-face button,#g-face2 button').forEach(x=>
+        x.setAttribute('aria-pressed',String(x===b)));
+      document.getElementById('facenote').textContent=FACE_NOTE[b.dataset.face];
+      document.getElementById('m-face').textContent=b.textContent;
+      /* Segoe pins its own weights, so reflect whatever actually applies */
+      const w=getComputedStyle(win).getPropertyValue('--w-body').trim();
+      wght.value=w; wghtV.textContent=w;
+    }));
+
+  document.querySelectorAll('#g-track button').forEach(b=>
+    b.addEventListener('click',()=>{
+      win.style.setProperty('--tk',b.dataset.tk);
+      document.querySelectorAll('#g-track button').forEach(x=>
+        x.setAttribute('aria-pressed',String(x===b)));
+      document.getElementById('m-track').textContent =
+        b.dataset.tk==='1' ? 'サイズ依存' : '一律 0';
+    }));
+
+  const wght=document.getElementById('wght'), wghtV=document.getElementById('wghtV'),
+        wghtL=document.getElementById('wghtL');
+  wght.addEventListener('input',()=>{
+    win.style.setProperty('--w-body',wght.value);
+    wghtV.textContent=wght.value;
+    wghtL.textContent = wght.value<430?'標準（Win 既定）':wght.value<490?'やや太め':'太め';
+    document.getElementById('m-wght').textContent=wght.value;
+  });
+
+  /* ── language (provisional: chrome only, so the Latin face can be judged) ── */
+  const DICT={
+    'よく使う項目':'Favorites','場所':'Locations','タグ':'Tags',
+    '最近の項目':'Recents','デスクトップ':'Desktop','書類':'Documents',
+    'ダウンロード':'Downloads','この PC':'This PC','ローカル (C:)':'Local Disk (C:)',
+    'ネットワーク':'Network','至急':'Urgent','確認中':'In review',
+    '納品済':'Delivered','資料':'Reference',
+    '名前':'Name','変更日':'Date Modified','サイズ':'Size','種類':'Kind',
+    'サイドバーを隠す':'Hide Sidebar','戻る':'Back','進む':'Forward',
+    '並べ替え':'Sort','共有':'Share','その他':'More','新しいタブ':'New Tab',
+    'このフォルダ内を検索':'Search this folder','検索':'Search',
+    '最小化':'Minimize','最大化':'Maximize','閉じる':'Close'
+  };
+  const KIND_EN={folder:'Folder',doc:'Document',pdf:'PDF Document',img:'PNG Image',
+                 zip:'Archive',aud:'Audio',code:'Source Code'};
+  const PREV_EN={'種類':'Kind','サイズ':'Size','変更日':'Modified','タグ付き':'Tagged'};
+  let lang='ja';
+
+  function swapText(root){
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const jobs=[];
+    while(w.nextNode()){
+      const n=w.currentNode, raw=n.nodeValue.trim();
+      if(!raw) continue;
+      if(!n.parentElement.dataset.ja) n.parentElement.dataset.ja=raw;
+      const src=n.parentElement.dataset.ja;
+      jobs.push([n, lang==='en' ? (DICT[src]||src) : src]);
+    }
+    jobs.forEach(([n,v])=>n.nodeValue=v);
+  }
+  function applyLang(){
+    swapText(document.querySelector('.side'));
+    swapText(document.querySelector('.lvhead'));
+    document.querySelectorAll('[title],[aria-label],[placeholder]').forEach(el=>{
+      ['title','aria-label','placeholder'].forEach(a=>{
+        const v=el.getAttribute(a); if(!v) return;
+        const k='ja'+a.replace(/-/g,'');
+        if(!el.dataset[k]) el.dataset[k]=v;
+        el.setAttribute(a, lang==='en' ? (DICT[el.dataset[k]]||el.dataset[k]) : el.dataset[k]);
+      });
+    });
+    TREE.n = lang==='en' ? 'Documents' : '書類';
+    document.querySelectorAll('.tabs-top .tab span,.tabs-below .tab span').forEach(s=>{
+      if(!s.dataset.ja) s.dataset.ja=s.textContent;
+      s.textContent = lang==='en' ? (DICT[s.dataset.ja]||s.dataset.ja) : s.dataset.ja;
+    });
+    renderColumns();
+  }
+  document.querySelectorAll('#g-lang button').forEach(b=>
+    b.addEventListener('click',()=>{
+      lang=b.dataset.lang; win.dataset.lang=lang;
+      document.querySelectorAll('#g-lang button').forEach(x=>
+        x.setAttribute('aria-pressed',String(x===b)));
+      applyLang();
+    }));
+  /* ════════════════════════════════════════════════════════════
+     ══ SETTINGS WINDOW ════════════════════════════════════════
+     Every control writes straight through to the live window, so the
+     file view behind it updates as you drag. No OK, no Apply.
+     ════════════════════════════════════════════════════════════ */
+  const prefs=document.getElementById('prefs'),
+        ptitle=document.getElementById('ptitle');
+  const $=id=>document.getElementById(id);
+
+  /* single source of truth: both the rail and the settings pane call these */
+  const S={
+    face:v=>{ win.dataset.face=v; },
+    wght:v=>win.style.setProperty('--w-body',v),
+    track:on=>win.style.setProperty('--tk',on?'1':'0'),
+    appearance:v=>{ win.dataset.appearance=v; },
+    acc:v=>win.style.setProperty('--acc',v),
+    blur:v=>win.style.setProperty('--glass-blur',v+'px'),
+    toolbar:v=>{ win.dataset.toolbar=v; requestAnimationFrame(measureHead); },
+    view:v=>setView(v,true),
+    row:v=>{ win.style.setProperty('--row',v+'px');
+             win.style.setProperty('--t-body',(11.5+v*.055).toFixed(1)+'px');
+             requestAnimationFrame(()=>movePill(scroll.querySelector('[aria-current="true"]'),false)); },
+    colw:v=>win.style.setProperty('--col-w',v+'px'),
+    prevw:v=>win.style.setProperty('--prev-w',v+'px'),
+    preview:on=>{ win.dataset.preview=on?'on':'off'; },
+    idle:v=>win.style.setProperty('--w-sel-idle',
+             v==='tint'?'color-mix(in srgb,var(--acc) 22%,transparent)':''),
+    tabs:v=>{ win.dataset.tabs=v; requestAnimationFrame(()=>{
+             movePill(scroll.querySelector('[aria-current="true"]'),false); measureHead(); }); }
+  };
+
+  const KEYMAPS={
+    oriel:[['開く','Ctrl+↓'],['名前を変更','Enter'],['プレビュー','Space'],
+           ['親フォルダへ','Ctrl+↑'],['カラム間を移動','← →'],['情報を見る','Ctrl+I'],
+           ['ゴミ箱に入れる','Ctrl+Delete']],
+    win:[['開く','Enter'],['名前を変更','F2'],['プレビュー','Alt+P'],
+         ['親フォルダへ','Alt+↑'],['カラム間を移動','← →'],['プロパティ','Alt+Enter'],
+         ['ゴミ箱に入れる','Delete']],
+    mix:[['開く','Enter'],['名前を変更','F2'],['プレビュー','Space'],
+         ['親フォルダへ','Alt+↑ / Ctrl+↑'],['カラム間を移動','← →'],['情報を見る','Ctrl+I'],
+         ['ゴミ箱に入れる','Delete']]
+  };
+  const KEYHINT={
+    oriel:'Enter は名前の変更、Ctrl+↓ で開きます。Windows の習慣で Enter を押すと意図せず名前の変更が始まる点にご注意ください。',
+    win:'エクスプローラーと同じ割り当てです。プレビューは Alt+P に退避します。',
+    mix:'Enter は「開く」のまま、Space のプレビューとカラム移動を足した組み合わせです。'
+  };
+  function drawKeys(mode){
+    $('p-keytable').innerHTML = KEYMAPS[mode].map(([a,b])=>
+      `<tr><td>${a}</td><td>${b}</td></tr>`).join('');
+    $('p-keyhint').textContent = KEYHINT[mode];
+  }
+
+  /* Living inside .win means the inspector inherits every appearance and type
+     token for free — including the inline overrides JS writes onto .win. That
+     is one whole class of bug the floating-window version had to work around. */
+
+  /* ── keep the rail and the inspector showing the same numbers ── */
+  let syncing=false;
+  function syncAll(){
+    if(syncing) return; syncing=true;
+    const cs=getComputedStyle(win);
+    const g=p=>cs.getPropertyValue(p).trim();
+    const px=p=>Math.round(parseFloat(g(p)));
+
+    const face=win.dataset.face, wt=g('--w-body'), tk=g('--tk')!=='0',
+          ap=win.dataset.appearance, acc=g('--acc'), bl=px('--glass-blur'),
+          tb=win.dataset.toolbar, vw=win.dataset.view, rw=px('--row'),
+          cw=px('--col-w'), pw=px('--prev-w'), pv=win.dataset.preview==='on',
+          idle=win.dataset.idle||'grey', tabs=win.dataset.tabs;
+
+    /* settings pane */
+    $('p-face').value=face; $('p-wght').value=wt; $('p-wghtV').textContent=wt;
+    $('p-track').checked=tk;
+    prefs.querySelector(`[name=pap][value="${ap}"]`).checked=true;
+    prefs.querySelectorAll('#p-acc button').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.acc.toLowerCase()===acc.toLowerCase())));
+    $('p-blur').value=bl; $('p-blurV').textContent=bl+' px';
+    prefs.querySelector(`[name=ptb][value="${tb}"]`).checked=true;
+    $('p-view').value=vw;
+    $('p-row').value=rw; $('p-rowV').textContent=rw+' px';
+    $('p-colw').value=cw; $('p-colwV').textContent=cw+' px';
+    $('p-prevw').value=pw; $('p-prevwV').textContent=pw+' px';
+    $('p-prev').checked=pv;
+    prefs.querySelector(`[name=pidle][value="${idle}"]`).checked=true;
+    prefs.querySelector(`[name=ptabs][value="${tabs}"]`).checked=true;
+
+    /* bench rail */
+    document.querySelectorAll('#g-face button,#g-face2 button').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.face===face)));
+    wght.value=wt; wghtV.textContent=wt;
+    document.querySelectorAll('#g-track button').forEach(b=>
+      b.setAttribute('aria-pressed',String((b.dataset.tk==='1')===tk)));
+    document.querySelectorAll('#g-app button').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.val===ap)));
+    document.querySelectorAll('#g-tb button').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.val===tb)));
+    document.querySelectorAll('#g-prev button').forEach(b=>
+      b.setAttribute('aria-pressed',String((b.dataset.val==='on')===pv)));
+    document.querySelectorAll('#g-tabs button').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.val===tabs)));
+    document.querySelectorAll('#acc button').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.acc.toLowerCase()===acc.toLowerCase())));
+    dens.value=rw; densV.textContent=rw+' px';
+    colw.value=cw; colwV.textContent=cw+' px';
+    prevw.value=pw; prevwV.textContent=pw+' px';
+    blur.value=bl; blurV.textContent=bl+' px';
+
+    /* measurement sheet */
+    $('m-face').textContent={inter:'Inter',plex:'IBM Plex Sans',
+      manrope:'Manrope',segoe:'Segoe UI Variable'}[face];
+    $('m-wght').textContent=wt; $('m-track').textContent=tk?'サイズ依存':'一律 0';
+    $('m-row').textContent=rw+' px'; $('m-colw').textContent=cw+' px';
+    $('m-prevw').textContent=pw+' px'; $('m-blur').textContent=bl+' px';
+    syncing=false;
+  }
+
+  /* ── settings controls ─────────────────────────────────────── */
+  const on=(id,ev,fn)=>$(id).addEventListener(ev,e=>{ fn(e.target); syncAll(); });
+  on('p-face','change',t=>S.face(t.value));
+  on('p-wght','input',t=>S.wght(t.value));
+  on('p-track','change',t=>S.track(t.checked));
+  on('p-blur','input',t=>S.blur(t.value));
+  on('p-view','change',t=>S.view(t.value));
+  on('p-row','input',t=>S.row(t.value));
+  on('p-colw','input',t=>S.colw(t.value));
+  on('p-prevw','input',t=>S.prevw(t.value));
+  on('p-prev','change',t=>S.preview(t.checked));
+  prefs.querySelectorAll('[name=pap]').forEach(r=>r.addEventListener('change',
+    ()=>{ S.appearance(r.value); syncAll(); }));
+  prefs.querySelectorAll('[name=ptb]').forEach(r=>r.addEventListener('change',
+    ()=>{ S.toolbar(r.value); syncAll(); }));
+  prefs.querySelectorAll('[name=ptabs]').forEach(r=>r.addEventListener('change',
+    ()=>{ S.tabs(r.value); syncAll(); }));
+  prefs.querySelectorAll('[name=pidle]').forEach(r=>r.addEventListener('change',
+    ()=>{ win.dataset.idle=r.value; S.idle(r.value);
+          $('m-idle').textContent=r.value==='tint'?'アクセント 22%':'灰 11.5%'; syncAll(); }));
+  prefs.querySelectorAll('[name=pkeys]').forEach(r=>r.addEventListener('change',
+    ()=>drawKeys(r.value)));
+  prefs.querySelectorAll('#p-acc button').forEach(b=>b.addEventListener('click',
+    ()=>{ S.acc(b.dataset.acc); syncAll(); }));
+  $('p-lang').addEventListener('change',e=>{
+    const b=[...document.querySelectorAll('#g-lang button')].find(x=>x.dataset.lang===e.target.value);
+    b?.click();
+  });
+
+  /* the rail is the design bench; mirror whatever it does back into settings */
+  document.querySelector('.rail').addEventListener('input',()=>requestAnimationFrame(syncAll));
+  document.querySelector('.rail').addEventListener('click',()=>requestAnimationFrame(syncAll));
+
+  /* ── open / close ──────────────────────────────────────────────
+     The panel does not fade in over the content; the window widens and
+     the panel is simply there in the space that opened. Width and the
+     content fade share the app's easing and the --d-panel duration, so
+     this reads as the same family of motion as the column push. */
+  const isOpen=()=>win.dataset.insp==='on';
+  function openPrefs(){ if(!isOpen()){ win.dataset.insp='on'; syncAll(); } }
+  function closePrefs(){ win.dataset.insp='off'; }
+  $('opensettings').addEventListener('click',()=>isOpen()?closePrefs():openPrefs());
+  $('pclose').addEventListener('click',closePrefs);
+  addEventListener('keydown',e=>{
+    if(e.ctrlKey && e.key===','){ e.preventDefault(); isOpen()?closePrefs():openPrefs(); }
+    if(e.key==='Escape' && isOpen()) closePrefs();
+  });
+
+  /* The panel is full height, so panes cross-fade rather than resize the
+     window. Same 150ms as every other content swap. */
+  prefs.querySelectorAll('.p-tabs button').forEach((b,i,all)=>b.addEventListener('click',()=>{
+    const panes=[...prefs.querySelectorAll('.p-pane')];
+    if(panes[i].hasAttribute('data-on')) return;
+    all.forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+    panes.forEach((p,j)=>j===i?p.setAttribute('data-on',''):p.removeAttribute('data-on'));
+    ptitle.textContent=panes[i].dataset.name;
+    if(!reduce) panes[i].animate([{opacity:0},{opacity:1}],{duration:150,easing:'linear'});
+  }));
+
+  drawKeys('oriel');
+
+  /* ── go ────────────────────────────────────────────────────── */
+  measureHead();
+  setView('column',false);
+  movePill(scroll.querySelector('[aria-current="true"]'),false);
+})();
+</script>

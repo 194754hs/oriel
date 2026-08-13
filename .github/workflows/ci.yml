@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Win32 and DirectX to the core — there is nowhere else to build this.
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: x64
+            arch: x64
+            cmake_args: ''
+          # A 64-bit DLL cannot load into a 32-bit host, and plenty of
+          # applications that show a save dialog are still 32-bit. This build
+          # produces the shim and nothing else.
+          - name: x86-shim
+            arch: Win32
+            cmake_args: '-DORIEL_SHIM_ONLY=ON'
+
+    name: build ${{ matrix.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -A ${{ matrix.arch }} ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Show what was produced
+        shell: pwsh
+        run: Get-ChildItem build\Release | Select-Object Name, Length | Format-Table -AutoSize
+
+      # ISC and MIT both require the notice to travel with the binary, and the
+      # build copies it next to the executable for exactly that reason. If the
+      # copy ever stops happening, distributing a build becomes a licence
+      # violation silently — so fail here instead.
+      - name: Third-party notices ship next to the binary
+        if: matrix.name == 'x64'
+        shell: pwsh
+        run: |
+          $notice = 'build\Release\THIRD-PARTY-NOTICES.txt'
+          if (-not (Test-Path $notice)) { throw "$notice missing — the post-build copy did not run" }
+          if ((Get-Item $notice).Length -lt 1024) { throw 'notices file is suspiciously small' }
+          'notices present: {0} bytes' -f (Get-Item $notice).Length
+
+      # Loads oriel_dialog.dll directly and asks it for a dialog the way COM
+      # would after the per-user override is in place. Touches no registry.
+      - name: shim_test
+        if: matrix.name == 'x64'
+        shell: pwsh
+        run: |
+          .\build\Release\shim_test.exe
+          if ($LASTEXITCODE -ne 0) { throw "shim_test exited $LASTEXITCODE" }

@@ -1,0 +1,4 @@
+LIBRARY oriel_dialog
+EXPORTS
+    DllGetClassObject   PRIVATE
+    DllCanUnloadNow     PRIVATE

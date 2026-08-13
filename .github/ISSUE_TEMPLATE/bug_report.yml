@@ -1,0 +1,75 @@
+name: Bug report
+description: The shell behaved differently from what the README describes
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **If this is about the dialog shim reaching into another application —
+        a lost or hijacked dialog, a DLL loaded from somewhere it should not be,
+        anything touching the machine-wide registration — do not file it here.**
+        Use Security → Report a vulnerability. See
+        [SECURITY.md](../blob/main/SECURITY.md).
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: "`git rev-parse --short HEAD` of the build you ran"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows build
+      description: "`winver`"
+      placeholder: "Windows 11 24H2 (26100.xxxx)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: config
+    attributes:
+      label: Which build?
+      options:
+        - x64 Debug
+        - x64 Release
+        - Win32 / ORIEL_SHIM_ONLY
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect instead?
+      description: If a file was renamed, moved or deleted unexpectedly, say so first.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. oriel.exe "C:\some\folder"
+        2. …
+    validations:
+      required: true
+
+  - type: input
+    id: display
+    attributes:
+      label: Display setup
+      description: >
+        Resolution, scale factor, and whether more than one monitor is involved
+        at different scales. The window is per-monitor-v2 DPI aware and most
+        layout defects live at a scale boundary.
+      placeholder: "3840x2160 @ 200%, second monitor 1920x1080 @ 100%"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log
+      description: "`oriel.log` from next to the executable. Redact paths you would rather not share."
+      render: text

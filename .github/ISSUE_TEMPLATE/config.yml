@@ -1,0 +1,15 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/194754hs/oriel/security/advisories/new
+    about: >
+      Report privately — never as a public issue. Anything involving the dialog
+      shim inside another application, the machine-wide registration, where the
+      genuine dialog is resolved from, or an application losing its file dialog
+      entirely belongs here.
+  - name: Materials and attribution rules
+    url: https://github.com/194754hs/oriel/blob/main/design/ATTRIBUTION.md
+    about: What may be brought into this project, under what licence, and the naming rules. Read before proposing an asset.
+  - name: Contributing guide
+    url: https://github.com/194754hs/oriel/blob/main/CONTRIBUTING.md
+    about: Build setup and the rules a pull request must not break.
