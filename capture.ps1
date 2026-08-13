@@ -23,9 +23,22 @@ public class Win {
 "@
 
 $OrielRoot = $PSScriptRoot
-$exe = "$OrielRoot\build\oriel.exe"
+# Shoot the release build when there is one - it is what a reader will see -
+# and let $env:ORIEL_EXE override for a build tree in another location.
+$exe = $env:ORIEL_EXE
+if (-not $exe) {
+    foreach ($c in @("$OrielRoot\build-rel\oriel.exe",
+                     "$OrielRoot\build\Release\oriel.exe",
+                     "$OrielRoot\build\oriel.exe")) {
+        if (Test-Path $c) { $exe = $c; break }
+    }
+}
+if (-not $exe) { throw "no oriel.exe found - build first, or set ORIEL_EXE" }
 $out = $args[0]
-if (-not $out) { $out = "$OrielRoot\build\shot.png" }
+if (-not $out) {
+    New-Item -ItemType Directory -Force "$OrielRoot\artifacts" | Out-Null
+    $out = "$OrielRoot\artifacts\shot.png"
+}
 
 if ($args[2]) { $p = Start-Process $exe -ArgumentList "`"$($args[2])`"" -PassThru }
 else          { $p = Start-Process $exe -PassThru }

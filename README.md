@@ -7,6 +7,8 @@
 
 日本語版: **[README.ja.md](README.ja.md)**
 
+![Oriel in column view: three columns showing a folder, its contents, and a preview pane with the selected file's type, size and modified date, above a breadcrumb of the path taken](docs/images/columns.png)
+
 Oriel is a native Windows file manager written in C++20 against Direct3D 11,
 Direct2D, DirectComposition and DirectWrite. There is no UI framework
 underneath: the window is borderless and every pixel in it is drawn by the
@@ -24,10 +26,24 @@ column view instead of a list they cannot navigate. That component is described
 in full below, because a DLL that loads into other people's processes deserves
 to be described in full.
 
+Every column carries its own selection, scroll position and multi-select anchor,
+so working in one does not disturb what you had chosen in another. Selecting a
+file opens a preview beside it, and the path you took reads along the bottom.
+
+![Oriel in grid view: file thumbnails laid out in a grid, with the view switcher in the toolbar](docs/images/grid.png)
+
+Grid, list and column views share the same model — switching is a change of
+presentation, not of state.
+
 > **Status: early.** The shell runs, navigates, renders and acts on files. The
 > dialog shim is deliberately still a pass-through — it registers, it is
 > reached, and it forwards everything to the genuine dialog. See
 > [Current state](#current-state) before expecting this to replace anything.
+>
+> **The interface is Japanese only.** Every UI string is currently hardcoded
+> Japanese and there is no localisation layer — the screenshots above show it
+> exactly as it builds. If you want to read it in English, that is the most
+> useful contribution available right now.
 
 ---
 
@@ -168,8 +184,9 @@ actions including rename, tags, persisted settings, the icon pipeline, and the
 motion layer.
 
 Not done: the shim answers with the genuine dialog rather than Oriel's picker;
-no code signing; no installer; no release binaries yet. Treat published
-behaviour as provisional until there is a tagged release.
+no localisation, so the interface is Japanese only; no code signing; no
+installer; no release binaries yet. Treat published behaviour as provisional
+until there is a tagged release.
 
 ## Licensing and attribution
 
