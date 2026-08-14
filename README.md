@@ -9,7 +9,7 @@
 
 **[Download 0.1.0 (Windows x64)](https://github.com/194754hs/oriel/releases/tag/v0.1.0)** — unzip, run `oriel.exe`. The file manager registers nothing; the dialog shim in the same archive is inert until you run `shim-control.ps1`, and [you should read that first](#the-dialog-shim). Nothing is code-signed.
 
-![Oriel in column view: three columns showing a folder, its contents, and a preview pane with the selected file's type, size and modified date, above a breadcrumb of the path taken](docs/images/columns.png)
+![Oriel in column view: the repository root, then .github, then ISSUE_TEMPLATE, each opening a new column to the right, with a preview pane giving the selected file's kind, size and modified date, and the path taken reading along the bottom](docs/images/columns.png)
 
 Oriel is a native Windows file manager written in C++20 against Direct3D 11,
 Direct2D, DirectComposition and DirectWrite. There is no UI framework
