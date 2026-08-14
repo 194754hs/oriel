@@ -7,6 +7,8 @@
 
 English: **[README.md](README.md)**
 
+**[0.1.0 をダウンロード (Windows x64)](https://github.com/194754hs/oriel/releases/latest)** — 展開して `oriel.exe` を実行。ファイラ側は何も登録しません。同梱のダイアログシムは `shim-control.ps1` を実行するまで不活性です（[先に読んでください](#ダイアログのシム)）。コード署名はありません。
+
 ![カラム表示の Oriel。フォルダー・その中身・選択中ファイルの種類とサイズと変更日を出すプレビューの3カラムが並び、下部に辿ってきた経路がパンくずで出ている](docs/images/columns.png)
 
 Oriel は Direct3D 11 / Direct2D / DirectComposition / DirectWrite に対して C++20 で書いた、ネイティブの Windows ファイラです。UIフレームワークは下に敷いていません。ウィンドウは枠なしで、その中の全ピクセルをアプリ自身がコンポジションサーフェス上に描くので、フレームの一部を本当に透過させてデスクトップの背景を通せます。
