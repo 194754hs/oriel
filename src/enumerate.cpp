@@ -1,3 +1,4 @@
+#include "i18n.h"
 #include "enumerate.h"
 
 #include <shlwapi.h>
@@ -26,7 +27,7 @@ Place Place::directory(std::wstring p) {
 Place Place::thisPC() {
     Place pl;
     pl.kind = PlaceKind::ThisPC;
-    pl.label = L"この PC";
+    pl.label = T(L"この PC");
     return pl;
 }
 
@@ -145,34 +146,34 @@ std::wstring formatDate(const FILETIME& ft) {
 }
 
 std::wstring formatKind(const Entry& e) {
-    if (e.isDir) return L"フォルダ";
+    if (e.isDir) return T(L"フォルダ");
     const size_t dot = e.name.find_last_of(L'.');
-    if (dot == std::wstring::npos) return L"ファイル";
+    if (dot == std::wstring::npos) return T(L"ファイル");
     std::wstring ext = e.name.substr(dot + 1);
     for (auto& c : ext) c = static_cast<wchar_t>(towlower(c));
 
     struct { const wchar_t* ext; const wchar_t* kind; } table[] = {
-        { L"txt", L"テキスト" },   { L"md",  L"Markdown" },
-        { L"pdf", L"PDF 書類" },   { L"doc", L"文書" },      { L"docx", L"文書" },
-        { L"xls", L"表計算" },     { L"xlsx", L"表計算" },
-        { L"ppt", L"プレゼン" },   { L"pptx", L"プレゼン" },
-        { L"png", L"PNG 画像" },   { L"jpg", L"JPEG 画像" }, { L"jpeg", L"JPEG 画像" },
-        { L"gif", L"GIF 画像" },   { L"svg", L"SVG 画像" },  { L"webp", L"WebP 画像" },
-        { L"mp4", L"動画" },       { L"mov", L"動画" },      { L"mkv", L"動画" },
-        { L"mp3", L"オーディオ" }, { L"m4a", L"オーディオ" }, { L"wav", L"オーディオ" },
-        { L"zip", L"圧縮フォルダ" }, { L"7z", L"圧縮フォルダ" }, { L"rar", L"圧縮フォルダ" },
-        { L"exe", L"アプリケーション" }, { L"dll", L"ライブラリ" },
-        { L"cpp", L"ソースコード" }, { L"h", L"ソースコード" },
-        { L"cs",  L"ソースコード" }, { L"ts", L"ソースコード" },
-        { L"js",  L"ソースコード" }, { L"py", L"ソースコード" },
-        { L"html", L"HTML 書類" },  { L"css", L"スタイルシート" },
-        { L"json", L"JSON" },       { L"log", L"ログ" },
+        { L"txt", T(L"テキスト") },   { L"md",  L"Markdown" },
+        { L"pdf", T(L"PDF 書類") },   { L"doc", T(L"文書") },      { L"docx", T(L"文書") },
+        { L"xls", T(L"表計算") },     { L"xlsx", T(L"表計算") },
+        { L"ppt", T(L"プレゼン") },   { L"pptx", T(L"プレゼン") },
+        { L"png", T(L"PNG 画像") },   { L"jpg", T(L"JPEG 画像") }, { L"jpeg", T(L"JPEG 画像") },
+        { L"gif", T(L"GIF 画像") },   { L"svg", T(L"SVG 画像") },  { L"webp", T(L"WebP 画像") },
+        { L"mp4", T(L"動画") },       { L"mov", T(L"動画") },      { L"mkv", T(L"動画") },
+        { L"mp3", T(L"オーディオ") }, { L"m4a", T(L"オーディオ") }, { L"wav", T(L"オーディオ") },
+        { L"zip", T(L"圧縮フォルダ") }, { L"7z", T(L"圧縮フォルダ") }, { L"rar", T(L"圧縮フォルダ") },
+        { L"exe", T(L"アプリケーション") }, { L"dll", T(L"ライブラリ") },
+        { L"cpp", T(L"ソースコード") }, { L"h", T(L"ソースコード") },
+        { L"cs",  T(L"ソースコード") }, { L"ts", T(L"ソースコード") },
+        { L"js",  T(L"ソースコード") }, { L"py", T(L"ソースコード") },
+        { L"html", T(L"HTML 書類") },  { L"css", T(L"スタイルシート") },
+        { L"json", L"JSON" },       { L"log", T(L"ログ") },
     };
     for (const auto& t : table)
         if (ext == t.ext) return t.kind;
 
     for (auto& c : ext) c = static_cast<wchar_t>(towupper(c));
-    return ext + L" ファイル";
+    return ext + T(L" ファイル");
 }
 
 void sortEntries(std::vector<Entry>& v, SortKey key, bool descending) {

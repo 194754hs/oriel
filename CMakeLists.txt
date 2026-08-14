@@ -41,6 +41,8 @@ add_executable(oriel WIN32
     src/svg_path.h
     src/anim.h
     src/fade.h
+    src/i18n.cpp
+    src/i18n.h
     src/log.cpp
     src/log.h
     src/metrics.h

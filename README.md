@@ -35,15 +35,14 @@ file opens a preview beside it, and the path you took reads along the bottom.
 Grid, list and column views share the same model — switching is a change of
 presentation, not of state.
 
+The interface is **English and Japanese**, following your Windows display
+language, with `general.lang` in the settings file to pin it (`0` auto, `1`
+Japanese, `2` English).
+
 > **Status: early.** The shell runs, navigates, renders and acts on files. The
 > dialog shim is deliberately still a pass-through — it registers, it is
 > reached, and it forwards everything to the genuine dialog. See
 > [Current state](#current-state) before expecting this to replace anything.
->
-> **The interface is Japanese only.** Every UI string is currently hardcoded
-> Japanese and there is no localisation layer — the screenshots above show it
-> exactly as it builds. If you want to read it in English, that is the most
-> useful contribution available right now.
 
 ---
 
@@ -184,9 +183,7 @@ actions including rename, tags, persisted settings, the icon pipeline, and the
 motion layer.
 
 Not done: the shim answers with the genuine dialog rather than Oriel's picker;
-no localisation, so the interface is Japanese only; no code signing; no
-installer; no release binaries yet. Treat published behaviour as provisional
-until there is a tagged release.
+no code signing; no installer. Treat published behaviour as provisional.
 
 ## Licensing and attribution
 

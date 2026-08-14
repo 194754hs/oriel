@@ -1,3 +1,4 @@
+#include "i18n.h"
 #include "tags.h"
 #include "utf8.h"
 #include "log.h"
@@ -21,7 +22,7 @@ std::wstring fold(const std::wstring& s) {
 } // namespace
 
 const wchar_t* TagStore::name(int tag) {
-    static const wchar_t* kNames[kTagCount] = { L"至急", L"確認中", L"納品済", L"資料" };
+    static const wchar_t* kNames[kTagCount] = { T(L"至急"), T(L"確認中"), T(L"納品済"), T(L"資料") };
     return (tag >= 0 && tag < kTagCount) ? kNames[tag] : L"";
 }
 

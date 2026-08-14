@@ -1,3 +1,4 @@
+#include "i18n.h"
 #include "actions.h"
 #include "log.h"
 
@@ -160,7 +161,7 @@ bool duplicate(HWND owner, const std::wstring& path) {
 
     for (int i = 2; i < 1000; ++i) {
         std::wstring candidate = dir + L"\\" + stem +
-            (i == 2 ? L" のコピー" : (L" のコピー " + std::to_wstring(i))) + ext;
+            (i == 2 ? T(L" のコピー") : (T(L" のコピー ") + std::to_wstring(i))) + ext;
         if (GetFileAttributesW(candidate.c_str()) != INVALID_FILE_ATTRIBUTES) continue;
         return runOperation(owner, FO_COPY, { path }, candidate,
                             FOF_ALLOWUNDO | FOF_NOCONFIRMMKDIR);
@@ -171,8 +172,8 @@ bool duplicate(HWND owner, const std::wstring& path) {
 std::wstring newFolder(HWND owner, const std::wstring& parent) {
     if (parent.empty()) return {};
     for (int i = 1; i < 1000; ++i) {
-        const std::wstring name = (i == 1) ? L"新規フォルダ"
-                                           : (L"新規フォルダ " + std::to_wstring(i));
+        const std::wstring name = (i == 1) ? T(L"新規フォルダ")
+                                           : (T(L"新規フォルダ ") + std::to_wstring(i));
         const std::wstring full = parent + L"\\" + name;
         if (CreateDirectoryW(full.c_str(), nullptr)) return name;
         if (GetLastError() != ERROR_ALREADY_EXISTS) break;
@@ -199,7 +200,7 @@ bool createShortcut(HWND owner, const std::wstring& path) {
     const std::wstring stem = path.substr(slash + 1);
     for (int i = 1; i < 1000; ++i) {
         std::wstring dest = dir + L"\\" + stem +
-            (i == 1 ? L" - ショートカット" : (L" - ショートカット (" + std::to_wstring(i) + L")")) + L".lnk";
+            (i == 1 ? T(L" - ショートカット") : (T(L" - ショートカット (") + std::to_wstring(i) + L")")) + L".lnk";
         if (GetFileAttributesW(dest.c_str()) != INVALID_FILE_ATTRIBUTES) continue;
         const bool ok = SUCCEEDED(file->Save(dest.c_str(), TRUE));
         if (!ok) logf("createShortcut failed for %ls", path.c_str());

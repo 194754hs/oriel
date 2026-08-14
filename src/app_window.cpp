@@ -1,3 +1,4 @@
+#include "i18n.h"
 #include "app_window.h"
 #include "assoc.h"
 #include "actions.h"
@@ -636,11 +637,11 @@ void AppWindow::paintSideBar(const D2D1_RECT_F& r) {
     // have to survive the sidebar collapsing, or the control that reopens it
     // disappears with it.
 
-    static const wchar_t* sections[] = { L"よく使う項目", L"場所", L"タグ" };
+    const wchar_t* sections[] = { T(L"よく使う項目"), T(L"場所"), T(L"タグ") };
     static const wchar_t* items[][5] = {
-        { L"最近の項目", L"デスクトップ", L"書類", L"ダウンロード", L"Projects" },
-        { L"この PC", L"ローカル (C:)", L"OneDrive", nullptr, nullptr },
-        { L"至急", L"確認中", L"納品済", L"資料", nullptr },
+        { T(L"最近の項目"), T(L"デスクトップ"), T(L"書類"), T(L"ダウンロード"), L"Projects" },
+        { T(L"この PC"), T(L"ローカル (C:)"), L"OneDrive", nullptr, nullptr },
+        { T(L"至急"), T(L"確認中"), T(L"納品済"), T(L"資料"), nullptr },
     };
     static const Icon icons[][5] = {
         { Icon::Clock, Icon::Desktop, Icon::Doc, Icon::Download, Icon::Star },
@@ -767,7 +768,7 @@ void AppWindow::paintToolBar(const D2D1_RECT_F& r) {
         const D2D1_RECT_F inner{ s.left + 28, s.top, s.right - 10, s.bottom };
         dc_->PushAxisAlignedClip(inner, D2D1_ANTIALIAS_MODE_ALIASED);
         if (search_.text.empty() && !search_.focused) {
-            text(L"検索", inner, ink, M::kTab.size, M::kTab.trackingEm, M::kTab.weight);
+            text(T(L"検索"), inner, ink, M::kTab.size, M::kTab.trackingEm, M::kTab.weight);
         } else {
             if (search_.hasSelection()) {
                 const float x0 = inner.left + textWidth(search_.text.c_str(), M::kTab.size,
@@ -1159,13 +1160,13 @@ void AppWindow::showSortMenu() {
     HMENU m = CreatePopupMenu();
     if (!m) return;
     const SortKey k = model().sortKey();
-    addItem(m, cmd::SortName,     L"名前",   true, k == SortKey::Name);
-    addItem(m, cmd::SortModified, L"変更日", true, k == SortKey::Modified);
-    addItem(m, cmd::SortSize,     L"サイズ", true, k == SortKey::Size);
-    addItem(m, cmd::SortKind,     L"種類",   true, k == SortKey::Kind);
+    addItem(m, cmd::SortName,     T(L"名前"),   true, k == SortKey::Name);
+    addItem(m, cmd::SortModified, T(L"変更日"), true, k == SortKey::Modified);
+    addItem(m, cmd::SortSize,     T(L"サイズ"), true, k == SortKey::Size);
+    addItem(m, cmd::SortKind,     T(L"種類"),   true, k == SortKey::Kind);
     addSeparator(m);
-    addItem(m, cmd::SortAscending,  L"昇順", true, !model().sortDescending());
-    addItem(m, cmd::SortDescending, L"降順", true,  model().sortDescending());
+    addItem(m, cmd::SortAscending,  T(L"昇順"), true, !model().sortDescending());
+    addItem(m, cmd::SortDescending, T(L"降順"), true,  model().sortDescending());
 
     const auto b = capsuleButton(0);
     POINT pt{ static_cast<LONG>(px(b.left)), static_cast<LONG>(px(b.bottom + 4)) };
@@ -1185,19 +1186,19 @@ void AppWindow::showFolderMenu(POINT screenPt) {
     bool cut = false;
     const bool clip = !act::clipboardPaths(hwnd_, &cut).empty();
 
-    addItem(m, cmd::NewFolder, L"新規フォルダ\tCtrl+Shift+N", inFolder);
-    addItem(m, cmd::Paste,     L"貼り付け\tCtrl+V",           inFolder && clip);
+    addItem(m, cmd::NewFolder, T(L"新規フォルダ\tCtrl+Shift+N"), inFolder);
+    addItem(m, cmd::Paste,     T(L"貼り付け\tCtrl+V"),           inFolder && clip);
     addSeparator(m);
     const SortKey k = model().sortKey();
-    addItem(m, cmd::SortName,     L"名前で並べ替え",   true, k == SortKey::Name);
-    addItem(m, cmd::SortModified, L"変更日で並べ替え", true, k == SortKey::Modified);
-    addItem(m, cmd::SortSize,     L"サイズで並べ替え", true, k == SortKey::Size);
-    addItem(m, cmd::SortKind,     L"種類で並べ替え",   true, k == SortKey::Kind);
+    addItem(m, cmd::SortName,     T(L"名前で並べ替え"),   true, k == SortKey::Name);
+    addItem(m, cmd::SortModified, T(L"変更日で並べ替え"), true, k == SortKey::Modified);
+    addItem(m, cmd::SortSize,     T(L"サイズで並べ替え"), true, k == SortKey::Size);
+    addItem(m, cmd::SortKind,     T(L"種類で並べ替え"),   true, k == SortKey::Kind);
     addSeparator(m);
-    addItem(m, cmd::ToggleHidden, L"隠しファイルを表示\tCtrl+H", true, model().showHidden());
-    addItem(m, cmd::Refresh,      L"再読み込み\tF5");
+    addItem(m, cmd::ToggleHidden, T(L"隠しファイルを表示\tCtrl+H"), true, model().showHidden());
+    addItem(m, cmd::Refresh,      T(L"再読み込み\tF5"));
     addSeparator(m);
-    addItem(m, cmd::Info,         L"情報を見る\tCtrl+I", true, inspOpen_);
+    addItem(m, cmd::Info,         T(L"情報を見る\tCtrl+I"), true, inspOpen_);
 
     const int chosen = TrackPopupMenuEx(m, TPM_RETURNCMD | TPM_RIGHTBUTTON |
                                            TPM_LEFTALIGN | TPM_TOPALIGN,
@@ -1214,28 +1215,28 @@ void AppWindow::showMoreMenu() {
     bool cut = false;
     const bool clip = !act::clipboardPaths(hwnd_, &cut).empty();
 
-    addItem(m, cmd::Open,      L"開く",                 has);
-    addItem(m, cmd::OpenWith,  L"このアプリケーションで開く…", has);
+    addItem(m, cmd::Open,      T(L"開く"),                 has);
+    addItem(m, cmd::OpenWith,  T(L"このアプリケーションで開く…"), has);
     addSeparator(m);
-    addItem(m, cmd::NewFolder, L"新規フォルダ\tCtrl+Shift+N", inFolder);
-    addItem(m, cmd::Rename,    L"名前を変更\tF2",        has);
-    addItem(m, cmd::Duplicate, L"複製\tCtrl+D",          has);
-    addItem(m, cmd::Shortcut,  L"ショートカットを作成",   has);
+    addItem(m, cmd::NewFolder, T(L"新規フォルダ\tCtrl+Shift+N"), inFolder);
+    addItem(m, cmd::Rename,    T(L"名前を変更\tF2"),        has);
+    addItem(m, cmd::Duplicate, T(L"複製\tCtrl+D"),          has);
+    addItem(m, cmd::Shortcut,  T(L"ショートカットを作成"),   has);
     addSeparator(m);
-    addItem(m, cmd::CopyItem,  L"コピー\tCtrl+C",        has);
-    addItem(m, cmd::CutItem,   L"切り取り\tCtrl+X",      has);
-    addItem(m, cmd::Paste,     L"貼り付け\tCtrl+V",      inFolder && clip);
-    addItem(m, cmd::CopyPath,  L"パスをコピー\tCtrl+Shift+C", has);
-    addItem(m, cmd::CopyName,  L"名前をコピー",           has);
+    addItem(m, cmd::CopyItem,  T(L"コピー\tCtrl+C"),        has);
+    addItem(m, cmd::CutItem,   T(L"切り取り\tCtrl+X"),      has);
+    addItem(m, cmd::Paste,     T(L"貼り付け\tCtrl+V"),      inFolder && clip);
+    addItem(m, cmd::CopyPath,  T(L"パスをコピー\tCtrl+Shift+C"), has);
+    addItem(m, cmd::CopyName,  T(L"名前をコピー"),           has);
     addSeparator(m);
-    addItem(m, cmd::Trash,     L"ごみ箱に入れる\tDelete", has);
+    addItem(m, cmd::Trash,     T(L"ごみ箱に入れる\tDelete"), has);
     addSeparator(m);
-    addItem(m, cmd::Info,      L"情報を見る\tCtrl+I",    true, inspOpen_);
-    addItem(m, cmd::Properties,L"プロパティ\tAlt+Enter", has);
-    addItem(m, cmd::Reveal,    L"エクスプローラーで表示", has);
+    addItem(m, cmd::Info,      T(L"情報を見る\tCtrl+I"),    true, inspOpen_);
+    addItem(m, cmd::Properties,T(L"プロパティ\tAlt+Enter"), has);
+    addItem(m, cmd::Reveal,    T(L"エクスプローラーで表示"), has);
     addSeparator(m);
-    addItem(m, cmd::ToggleHidden, L"隠しファイルを表示", true, model().showHidden());
-    addItem(m, cmd::Refresh,   L"再読み込み\tF5");
+    addItem(m, cmd::ToggleHidden, T(L"隠しファイルを表示"), true, model().showHidden());
+    addItem(m, cmd::Refresh,   T(L"再読み込み\tF5"));
 
     const auto b = capsuleButton(2);
     POINT pt{ static_cast<LONG>(px(b.left)), static_cast<LONG>(px(b.bottom + 4)) };
@@ -1505,11 +1506,11 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
                        nullptr);
 
     float y = r.top + 12;
-    text(L"設定", { x0 + 16, y, r.right - 44, y + 24 }, theme_.ink,
+    text(T(L"設定"), { x0 + 16, y, r.right - 44, y + 24 }, theme_.ink,
          M::kHead.size, M::kHead.trackingEm, M::kHead.weight);
     y += 32;
 
-    static const wchar_t* tabs[4] = { L"一般", L"外観", L"表示", L"キー操作" };
+    const wchar_t* tabs[4] = { T(L"一般"), T(L"外観"), T(L"表示"), T(L"キー操作") };
     const float tw = (M::kInspector - 28) / 4.0f;
     D2D1_ROUNDED_RECT strip{ { x0 + 14, y, r.right - 14, y + 28 }, 8, 8 };
     brush_->SetColor(theme_.selSoft);
@@ -1561,7 +1562,7 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
     };
 
     if (inspTab_ == 1) {                       // 外観
-        label(L"外観");
+        label(T(L"外観"));
         for (int i = 0; i < 2; ++i) {
             const float rx = x0 + 150 + i * 92;
             D2D1_ELLIPSE dot{ { rx + 8, y + 11 }, 7.5f, 7.5f };
@@ -1575,13 +1576,13 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
                 brush_->SetColor(rgba(255, 255, 255));
                 dc_->FillEllipse(in, brush_.Get());
             }
-            text(i == 0 ? L"ライト" : L"ダーク",
+            text(i == 0 ? T(L"ライト") : T(L"ダーク"),
                  { rx + 24, y, rx + 88, y + 22 }, theme_.ink,
                  M::kMeta.size, M::kMeta.trackingEm, M::kMeta.weight);
         }
         y += 34;
 
-        label(L"アクセント");
+        label(T(L"アクセント"));
         static const D2D1_COLOR_F accents[6] = {
             rgba(0x00,0x78,0xD4), rgba(0x2F,0x6F,0xEB), rgba(0x3A,0x8B,0x5C),
             rgba(0x8B,0x5C,0xB8), rgba(0xB8,0x5C,0x38), rgba(0x5A,0x65,0x70) };
@@ -1602,10 +1603,10 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
         // Not the backdrop blur - that belongs to DWM and is not ours to move.
         // This is the wash we paint over the content under the toolbar, which
         // genuinely is ours and is what reads as "how glassy".
-        slider(L"ツールバーの濃度", &setBlur_, 0, 100, L"%");
+        slider(T(L"ツールバーの濃度"), &setBlur_, 0, 100, L"%");
     } else if (inspTab_ == 2) {                // 表示
-        slider(L"行の高さ", &setRowHeight_, 20, 36, L"px");
-        slider(L"カラム幅", &setColumnW_, 150, 300, L"px");
+        slider(T(L"行の高さ"), &setRowHeight_, 20, 36, L"px");
+        slider(T(L"カラム幅"), &setColumnW_, 150, 300, L"px");
 
         auto checkbox = [&](const wchar_t* name, const wchar_t* caption, bool on) {
             label(name);
@@ -1623,8 +1624,8 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
                  M::kMeta.size, M::kMeta.trackingEm, M::kMeta.weight);
             y += 34;
         };
-        checkbox(L"プレビュー欄", L"カラムの右端に表示", setPreview_);
-        checkbox(L"アプリの記号", L"そのアプリの書類に使う", setAppIcons_);
+        checkbox(T(L"プレビュー欄"), T(L"カラムの右端に表示"), setPreview_);
+        checkbox(T(L"アプリの記号"), T(L"そのアプリの書類に使う"), setAppIcons_);
     } else if (inspTab_ == 0) {               // 一般
         auto checkbox = [&](const wchar_t* name, const wchar_t* caption, bool on) {
             label(name);
@@ -1642,23 +1643,23 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
                  M::kMeta.size, M::kMeta.trackingEm, M::kMeta.weight);
             y += 34;
         };
-        checkbox(L"隠しファイル", L"一覧に表示する", model().showHidden());
-        checkbox(L"削除", L"ごみ箱へ移す前に確認する", setConfirmDelete_);
+        checkbox(T(L"隠しファイル"), T(L"一覧に表示する"), model().showHidden());
+        checkbox(T(L"削除"), T(L"ごみ箱へ移す前に確認する"), setConfirmDelete_);
 
-        label(L"起動時");
-        text(L"最後に見ていた場所", { x0 + 174, y, r.right - 16, y + 22 }, theme_.ink,
+        label(T(L"起動時"));
+        text(T(L"最後に見ていた場所"), { x0 + 174, y, r.right - 16, y + 22 }, theme_.ink,
              M::kMeta.size, M::kMeta.trackingEm, M::kMeta.weight);
         y += 34;
 
-        label(L"タグの保存先");
+        label(T(L"タグの保存先"));
         text(L"%LOCALAPPDATA%\\Oriel\\tags.tsv", { x0 + 174, y, r.right - 16, y + 22 },
              theme_.ink2, M::kCap.size, M::kCap.trackingEm, M::kCap.weight);
         y += 24;
         // The shared text format has wrapping off - long file names must clip
         // rather than reflow - so a caption is written as lines, not a block.
         static const wchar_t* note[2] = {
-            L"別のアプリでファイルを移動すると対応が切れます。",
-            L"テキストなので手で直せます。",
+            T(L"別のアプリでファイルを移動すると対応が切れます。"),
+            T(L"テキストなので手で直せます。"),
         };
         for (const wchar_t* ln : note) {
             text(ln, { x0 + 174, y, r.right - 16, y + 20 }, theme_.ink2,
@@ -1667,7 +1668,7 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
         }
         y += 10;
     } else {                                   // キー操作
-        label(L"配列");
+        label(T(L"配列"));
         for (int i = 0; i < 2; ++i) {
             const bool on = (i == 0) == setOrielKeys_;
             const float cxr = x0 + 158;
@@ -1678,19 +1679,19 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
                 brush_->SetColor(theme_.accent);
                 dc_->FillEllipse(D2D1_ELLIPSE{ { cxr, cyr }, 3.6f, 3.6f }, brush_.Get());
             }
-            text(i == 0 ? L"Oriel 標準" : L"Windows 標準",
+            text(i == 0 ? T(L"Oriel 標準") : T(L"Windows 標準"),
                  { x0 + 174, cyr - 11, r.right - 16, cyr + 11 }, theme_.ink,
                  M::kMeta.size, M::kMeta.trackingEm, M::kMeta.weight);
         }
         y += 60;
 
         static const wchar_t* keys[][2] = {
-            { L"↑ ↓",        L"同じ階層で選び変える" },
-            { L"← →",        L"一段戻る / 一段進む" },
-            { L"Ctrl + F",   L"検索を開く" },
-            { L"Ctrl + 1〜4",L"タグを付け外しする" },
-            { L"Ctrl + ,",   L"この設定を開閉する" },
-            { L"Esc",        L"検索や入力を抜ける" },
+            { L"↑ ↓",        T(L"同じ階層で選び変える") },
+            { L"← →",        T(L"一段戻る / 一段進む") },
+            { L"Ctrl + F",   T(L"検索を開く") },
+            { L"Ctrl + 1〜4",T(L"タグを付け外しする") },
+            { L"Ctrl + ,",   T(L"この設定を開閉する") },
+            { L"Esc",        T(L"検索や入力を抜ける") },
         };
         for (const auto& k : keys) {
             text(k[0], { x0 + 16, y, x0 + 150, y + 22 }, theme_.ink2,
@@ -1701,8 +1702,8 @@ void AppWindow::paintInspector(const D2D1_RECT_F& r) {
             y += 28;
         }
         y += 6;
-        text(setOrielKeys_ ? L"Enter は名前の変更、Ctrl + ↓ で開きます。"
-                           : L"Enter で開きます。名前の変更は F2 です。",
+        text(setOrielKeys_ ? T(L"Enter は名前の変更、Ctrl + ↓ で開きます。")
+                           : T(L"Enter で開きます。名前の変更は F2 です。"),
              { x0 + 16, y, r.right - 16, y + 40 }, theme_.ink2,
              M::kCap.size, M::kCap.trackingEm, M::kCap.weight);
     }
@@ -2099,17 +2100,17 @@ void AppWindow::paintColumns(const D2D1_RECT_F& r) {
         }
 
         if (c.loading) {
-            text(L"読み込み中…", { cr.x + 15, r.top + M::kToolBar + 4,
+            text(T(L"読み込み中…"), { cr.x + 15, r.top + M::kToolBar + 4,
                                    cr.x + cr.w - 15, r.top + M::kToolBar + 4 + setRowHeight_ },
                  theme_.ink2, M::kBody.size, M::kBody.trackingEm, M::kBody.weight);
         } else if (c.listing.error != ERROR_SUCCESS) {
-            text(c.listing.error == ERROR_ACCESS_DENIED ? L"アクセスできません"
-                                                        : L"読み取れません",
+            text(c.listing.error == ERROR_ACCESS_DENIED ? T(L"アクセスできません")
+                                                        : T(L"読み取れません"),
                  { cr.x + 15, r.top + M::kToolBar + 4,
                    cr.x + cr.w - 15, r.top + M::kToolBar + 4 + setRowHeight_ },
                  theme_.ink2, M::kBody.size, M::kBody.trackingEm, M::kBody.weight);
         } else if (const auto rows = visibleRows(c); rows.empty()) {
-            text(c.listing.entries.empty() ? L"項目がありません" : L"一致する項目がありません",
+            text(c.listing.entries.empty() ? T(L"項目がありません") : T(L"一致する項目がありません"),
                  { cr.x + 15, r.top + M::kToolBar + 4,
                    cr.x + cr.w - 15, r.top + M::kToolBar + 4 + setRowHeight_ },
                  theme_.ink2, M::kBody.size, M::kBody.trackingEm, M::kBody.weight);
@@ -2337,7 +2338,7 @@ void AppWindow::paintList(const D2D1_RECT_F& r) {
     const float right = r.right;
     fill({ r.left, head, r.right, head + 24 }, theme_.content);
     hairline(r.left, head + 24 - dips(1), r.right, head + 24, theme_.hair);
-    const wchar_t* titles[4] = { L"名前", L"変更日", L"サイズ", L"種類" };
+    const wchar_t* titles[4] = { T(L"名前"), T(L"変更日"), T(L"サイズ"), T(L"種類") };
     float hx = right - 14;
     for (int i = 2; i >= 0; --i) {
         text(titles[i + 1], { hx - cols[i], head, hx, head + 24 }, theme_.ink2,
@@ -2461,9 +2462,9 @@ void AppWindow::paintPreview(const D2D1_RECT_F& r) {
     y += 30;
 
     const std::wstring rows[3][2] = {
-        { L"種類",    formatKind(*e)     },
-        { L"サイズ",  formatSize(*e)     },
-        { L"変更日",  formatDate(e->written) },
+        { T(L"種類"),    formatKind(*e)     },
+        { T(L"サイズ"),  formatSize(*e)     },
+        { T(L"変更日"),  formatDate(e->written) },
     };
     for (const auto& kv : rows) {
         text(kv[0].c_str(), { r.left + 20, y, cx - 7, y + 18 }, theme_.ink2,
@@ -2515,12 +2516,12 @@ void AppWindow::paintPathBar(const D2D1_RECT_F& r) {
     if (picked > 1) {
         // With several chosen, the count of them is the useful number - the
         // preview has nothing to show and the folder total says less.
-        swprintf_s(count, L"%zu 項目を選択", picked);
+        swprintf_s(count, T(L"%zu 項目を選択"), picked);
     } else if (deepest && !deepest->loading) {
         const size_t total = deepest->listing.entries.size();
         const size_t shown = visibleRows(*deepest).size();
-        if (shown != total) swprintf_s(count, L"%zu / %zu 項目", shown, total);
-        else                swprintf_s(count, L"%zu 項目", total);
+        if (shown != total) swprintf_s(count, T(L"%zu / %zu 項目"), shown, total);
+        else                swprintf_s(count, T(L"%zu 項目"), total);
     }
     text(count, { r.right - 110, r.top, r.right - 12, r.bottom },
          theme_.ink2, M::kCap.size, M::kCap.trackingEm, M::kCap.weight,
@@ -2575,10 +2576,10 @@ void AppWindow::paintActionBar(const D2D1_RECT_F& r) {
     // Saving needs somewhere to type a name and a way to narrow the list.
     if (pickerReq_.save) {
         const auto nf = nameFieldRect();
-        text(L"名前", { r.left + 16, nf.top, nf.left - 10, nf.bottom }, theme_.ink2,
+        text(T(L"名前"), { r.left + 16, nf.top, nf.left - 10, nf.bottom }, theme_.ink2,
              M::kMeta.size, M::kMeta.trackingEm, M::kMeta.weight,
              DWRITE_TEXT_ALIGNMENT_TRAILING);
-        paintField(nf, nameField_, L"ファイル名", M::kBody.size,
+        paintField(nf, nameField_, T(L"ファイル名"), M::kBody.size,
                    M::kBody.trackingEm, M::kBody.weight);
 
         const auto tf = typeFieldRect();
@@ -2586,7 +2587,7 @@ void AppWindow::paintActionBar(const D2D1_RECT_F& r) {
         auto bg = theme_.selSoft; bg.a += 0.05f * g;
         brush_->SetColor(bg);
         dc_->FillRoundedRectangle(stadium(tf), brush_.Get());
-        std::wstring label = L"すべてのファイル";
+        std::wstring label = T(L"すべてのファイル");
         if (!pickerReq_.types.empty()) {
             const int i = std::clamp(pickerReq_.typeIndex, 0,
                                      static_cast<int>(pickerReq_.types.size()) - 1);
@@ -2602,15 +2603,15 @@ void AppWindow::paintActionBar(const D2D1_RECT_F& r) {
     // What the application will receive, stated plainly.
     const std::wstring path = pickerResult();
     const bool ready = !path.empty();
-    std::wstring shown = ready ? path : L"項目を選んでください";
+    std::wstring shown = ready ? path : T(L"項目を選んでください");
     const float infoTop = r.bottom - M::kActionBar;
     text(shown.c_str(), { r.left + 16, infoTop, r.right - 2 * (M::kButtonW + 10) - 30, r.bottom },
          ready ? theme_.ink : theme_.ink2,
          M::kMeta.size, M::kMeta.trackingEm, M::kMeta.weight);
 
     struct { const wchar_t* label; bool primary; } b[2] = {
-        { pickerReq_.save ? L"保存" : L"開く", true },
-        { L"キャンセル", false },
+        { pickerReq_.save ? T(L"保存") : T(L"開く"), true },
+        { T(L"キャンセル"), false },
     };
     for (int i = 0; i < 2; ++i) {
         const auto box = actionButton(i);
@@ -3104,16 +3105,16 @@ LRESULT AppWindow::handle(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
                 mi.fMask = MIIM_FTYPE; mi.fType = MFT_SEPARATOR;
                 InsertMenuItemW(m, at++, TRUE, &mi);
             };
-            ins(cmd::Open,      L"開く", true);
-            ins(cmd::Rename,    L"名前を変更", true);
-            ins(cmd::Duplicate, L"複製", true);
+            ins(cmd::Open,      T(L"開く"), true);
+            ins(cmd::Rename,    T(L"名前を変更"), true);
+            ins(cmd::Duplicate, T(L"複製"), true);
             sep();
-            ins(cmd::CopyItem,  L"コピー", true);
-            ins(cmd::CutItem,   L"切り取り", true);
-            ins(cmd::Paste,     L"貼り付け", clip && !targetFolder().empty());
-            ins(cmd::CopyPath,  L"パスをコピー", true);
+            ins(cmd::CopyItem,  T(L"コピー"), true);
+            ins(cmd::CutItem,   T(L"切り取り"), true);
+            ins(cmd::Paste,     T(L"貼り付け"), clip && !targetFolder().empty());
+            ins(cmd::CopyPath,  T(L"パスをコピー"), true);
             sep();
-            ins(cmd::Trash,     L"ごみ箱に入れる", true);
+            ins(cmd::Trash,     T(L"ごみ箱に入れる"), true);
             sep();
         }
 

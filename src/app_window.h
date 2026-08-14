@@ -1,4 +1,5 @@
 #pragma once
+#include "i18n.h"
 #include <windows.h>
 #include <d2d1_1.h>
 #include <d3d11.h>
@@ -25,7 +26,7 @@ namespace oriel {
 using Microsoft::WRL::ComPtr;
 
 // What an application asked for, and what it gets back.
-// One entry of the dialog's type filter, e.g. {L"画像", L"*.png;*.jpg"}.
+// One entry of the dialog's type filter, e.g. {T(L"画像"), L"*.png;*.jpg"}.
 struct FileType {
     std::wstring label;
     std::wstring spec;

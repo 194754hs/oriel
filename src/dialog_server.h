@@ -1,4 +1,5 @@
 #pragma once
+#include "i18n.h"
 #include <windows.h>
 #include <thread>
 #include <atomic>
@@ -16,7 +17,7 @@ struct PickJob {
     HWND owner = nullptr;
     std::wstring folder;
     std::wstring fileName;
-    // label, spec - e.g. {L"画像", L"*.png;*.jpg"}
+    // label, spec - e.g. {T(L"画像"), L"*.png;*.jpg"}
     std::vector<std::pair<std::wstring, std::wstring>> types;
     int typeIndex = 0;
 

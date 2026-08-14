@@ -1,4 +1,6 @@
 #include "app_window.h"
+#include "i18n.h"
+#include "settings.h"
 #include <string>
 
 // `oriel.exe [folder]` — opening at a given folder is how the shell will hand
@@ -21,6 +23,14 @@ int APIENTRY wWinMain(HINSTANCE hinst, HINSTANCE, LPWSTR cmdLine, int nCmdShow) 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED))) return 1;
+
+    // Language before anything draws. 0 = follow the OS UI language, which is
+    // what an English-speaking user gets without touching a setting.
+    {
+        oriel::Settings s;
+        s.load();
+        oriel::i18nInit(static_cast<oriel::Lang>(s.getInt(L"general.lang", 0)));
+    }
 
     oriel::AppWindow app;
     if (!app.create(hinst, nCmdShow, startFolderFrom(cmdLine))) { CoUninitialize(); return 2; }
