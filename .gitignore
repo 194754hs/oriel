@@ -1,7 +1,11 @@
-# Build output
+# Build output. Wildcards, because a release gets cut from whatever directory
+# it was configured into and one of those did get committed once.
 build/
 build-rel/
 build-x86/
+build-*/
+dist-*/
+out/
 
 # Third-party icon packages, fetched by design/fetch-icons.ps1.
 #
